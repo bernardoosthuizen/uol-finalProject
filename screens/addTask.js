@@ -5,7 +5,16 @@ when they are logged in.
 **/
 
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, SafeAreaView, Dimensions, Pressable } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  SafeAreaView,
+  Dimensions,
+  Pressable,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from "react-native";
 import { TextInput } from "react-native-paper";
 import { useState } from 'react';
 import DropDownPicker from "react-native-dropdown-picker";
@@ -43,83 +52,87 @@ export default function AddTask({navigation}) {
 
     const { width, height } = Dimensions.get("window");
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.titleContainer}>
-          <Text
-            style={{
-              fontSize: width * 0.06,
-              color: "#4F83A5",
-              fontWeight: "bold",
-            }}>
-            Add Task
-          </Text>
-        </View>
-        <View style={{ flex: 9, width: width * 0.8, marginVertical: "5%" }}>
-          <TextInput
-            label='Title'
-            mode='outlined'
-            selectionColor='#4F83A5'
-            activeOutlineColor='#4F83A5'
-            placeholder='Task Title'
-            value={taskTitle}
-            onChangeText={(taskTitle) => setTaskTitle(taskTitle)}
-          />
-          <TextInput
-            label='Description'
-            mode='outlined'
-            selectionColor='#4F83A5'
-            activeOutlineColor='#4F83A5'
-            placeholder='Description'
-            value={taskDescription}
-            onChangeText={(taskDescription) =>
-              setTaskDescription(taskDescription)
-            }
-          />
-          <TextInput
-            label='Details'
-            mode='outlined'
-            selectionColor='#4F83A5'
-            activeOutlineColor='#4F83A5'
-            placeholder='Details'
-            multiline={true}
-            style={{ height: height / 4 }}
-            value={taskDetails}
-            onChangeText={(taskDetails) => setTaskDetails(taskDetails)}
-          />
-          <Pressable style={styles.datePicker} onPress={()=>(setDatePickerVisibility(true))}>
-            <Text>{newDate}</Text>
-            <DateTimePickerModal
-              isVisible={isDatePickerVisible}
-              mode='date'
-              onConfirm={handleDateConfirm}
-              onCancel={()=>setDatePickerVisibility(false)}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.titleContainer}>
+            <Text
+              style={{
+                fontSize: width * 0.06,
+                color: "#4F83A5",
+                fontWeight: "bold",
+              }}>
+              Add Task
+            </Text>
+          </View>
+          <View style={{ flex: 9, width: width * 0.8, marginVertical: "5%" }}>
+            <TextInput
+              label='Title'
+              mode='outlined'
+              selectionColor='#4F83A5'
+              activeOutlineColor='#4F83A5'
+              placeholder='Task Title'
+              value={taskTitle}
+              onChangeText={(taskTitle) => setTaskTitle(taskTitle)}
             />
-          </Pressable>
-          <DropDownPicker
-            open={priorityListOpen}
-            value={taskPriority}
-            items={priorities}
-            setOpen={setPriorityListOpen}
-            setValue={setTaskPriority}
-            setItems={setPriorities}
-            autoScroll={true}
-            style={styles.priorityList}
-            dropDownContainerStyle={styles.dropdownMenu}
-          />
-          <Pressable
-            style={({ pressed }) => [
-              { opacity: pressed ? 0.5 : 1.0, width: width * 0.8 },
-              styles.button,
-            ]}
-            onPress={() => {
-              alert("press");
-            }}>
-            <Text style={{ color: "white" }}>Save</Text>
-          </Pressable>
-        </View>
+            <TextInput
+              label='Description'
+              mode='outlined'
+              selectionColor='#4F83A5'
+              activeOutlineColor='#4F83A5'
+              placeholder='Description'
+              value={taskDescription}
+              onChangeText={(taskDescription) =>
+                setTaskDescription(taskDescription)
+              }
+            />
+            <TextInput
+              label='Details'
+              mode='outlined'
+              selectionColor='#4F83A5'
+              activeOutlineColor='#4F83A5'
+              placeholder='Details'
+              multiline={true}
+              style={{ height: height / 4 }}
+              value={taskDetails}
+              onChangeText={(taskDetails) => setTaskDetails(taskDetails)}
+            />
+            <Pressable
+              style={styles.datePicker}
+              onPress={() => setDatePickerVisibility(true)}>
+              <Text>{newDate}</Text>
+              <DateTimePickerModal
+                isVisible={isDatePickerVisible}
+                mode='date'
+                onConfirm={handleDateConfirm}
+                onCancel={() => setDatePickerVisibility(false)}
+              />
+            </Pressable>
+            <DropDownPicker
+              open={priorityListOpen}
+              value={taskPriority}
+              items={priorities}
+              setOpen={setPriorityListOpen}
+              setValue={setTaskPriority}
+              setItems={setPriorities}
+              autoScroll={true}
+              style={styles.priorityList}
+              dropDownContainerStyle={styles.dropdownMenu}
+            />
+            <Pressable
+              style={({ pressed }) => [
+                { opacity: pressed ? 0.5 : 1.0, width: width * 0.8 },
+                styles.button,
+              ]}
+              onPress={() => {
+                alert("press");
+              }}>
+              <Text style={{ color: "white" }}>Save</Text>
+            </Pressable>
+          </View>
 
-        <StatusBar style='auto' />
-      </SafeAreaView>
+          <StatusBar style='auto' />
+        </SafeAreaView>
+      </TouchableWithoutFeedback>
     );
 }
 
