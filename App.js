@@ -5,10 +5,10 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   Image
 } from "react-native";
-import Login from './components/login';
-import SignUp from './components/signUp';
-import Home from './components/home';
-import Tasks from './components/tasks';
+import Login from './screens/login';
+import SignUp from './screens/signUp';
+import Home from './screens/home';
+import Tasks from './screens/tasks';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -59,6 +59,7 @@ function LoggedInRoutes() {
         name='Tasks'
         component={Tasks}
         options={{
+          headerShown: false,
           tabBarIcon: ({ size, focused, color }) => {
             return (
               <Image

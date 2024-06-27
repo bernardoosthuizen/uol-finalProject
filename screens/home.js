@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import { Dimensions } from "react-native";
 import { DataTable } from "react-native-paper";
+import TaskListComponent from '../components/taskListComponent';
 
 
 export function LeaderItem ({ item }) {
@@ -76,64 +77,7 @@ export default function Home() {
       <View style={styles.tasksContainer}>
         <Text style={styles.titleText}>My Tasks</Text>
         <View>
-          <DataTable>
-            {taskdata.map((item) => (
-              <Pressable
-                key={item.id}
-                style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1.0 }]}
-                onPress={() => console.log("Pressed: "+ item.id)}>
-                <DataTable.Row key={item.id} style={styles.row}>
-                  <DataTable.Cell style={{ flex: 1 }}>
-                    {/* Set image based on priority */}
-                    {item.prority === "high" ? (
-                      <Image
-                        source={require("../assets/icons/high-priority.png")}
-                        style={{
-                          resizeMode: "contain",
-                        }}
-                        alt='priority icon'
-                      />
-                    ) : item.prority === "medium" ? (
-                      <Image
-                        source={require("../assets/icons/medium-priority.png")}
-                        style={{
-                          resizeMode: "contain",
-                        }}
-                        alt='priority icon'
-                      />
-                    ) : (
-                      <Image
-                        source={require("../assets/icons/low-priority.png")}
-                        style={{
-                          resizeMode: "contain",
-                        }}
-                        alt='priority icon'
-                      />
-                    )}
-                  </DataTable.Cell>
-                  <DataTable.Cell style={{ flex: 3 }}>
-                    <Text style={{ fontSize: width * 0.04 }}>{item.title}</Text>
-                  </DataTable.Cell>
-                  <DataTable.Cell
-                    numeric
-                    style={{ flex: 2, flexDirection: "row" }}>
-                    <View style={{ flex: 1, flexDirection: "row" }}>
-                      <Image
-                        source={require("../assets/icons/calendar.png")}
-                        style={{
-                          width: width * 0.01,
-                          flex: 1,
-                          resizeMode: "contain",
-                        }}
-                        alt='Calendar icon'
-                      />
-                      <Text style={{ fontSize: width * 0.04 }}>Today</Text>
-                    </View>
-                  </DataTable.Cell>
-                </DataTable.Row>
-              </Pressable>
-            ))}
-          </DataTable>
+          <TaskListComponent tasks={taskdata} />
         </View>
       </View>
       <StatusBar style='auto' />
