@@ -1,3 +1,9 @@
+/* 
+----------------- SOCIAL TASKER - Sign Up ------------------
+This is the sign up screen. It is the screen that the user
+sees when they want to create a new account.
+**/
+
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
@@ -26,7 +32,7 @@ export default function Login({ navigation }) {
         />
       </View>
       <View style={styles.ctaContainer}>
-        <Text style={[ styles.ctaText, { fontSize: width * 0.1 }]}>
+        <Text style={[styles.ctaText, { fontSize: width * 0.1 }]}>
           Sign Up{" "}
         </Text>
         <Text style={[styles.ctaText, { fontSize: width * 0.055 }]}>
@@ -59,7 +65,10 @@ export default function Login({ navigation }) {
           autoComplete='password'
         />
         <Pressable
-          style={[styles.button, { width: width * 0.7 }]}
+          style={({ pressed }) => [
+            { opacity: pressed ? 0.5 : 1.0, width: width * 0.7 },
+            styles.button,
+          ]}
           onPress={() => {
             alert("press");
           }}>
@@ -88,7 +97,7 @@ const styles = StyleSheet.create({
     width: "70%",
     justifyContent: "center",
   },
-  ctaText :{
+  ctaText: {
     color: "#4F83A5",
     fontWeight: "bold",
     marginBottom: 10,

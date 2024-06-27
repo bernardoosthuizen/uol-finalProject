@@ -1,3 +1,8 @@
+/* 
+------------------ SOCIAL TASKER - Login -------------------
+This is the login screen. It is the first screen that the user 
+sees when they open the app.
+**/
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View, SafeAreaView, Image, TextInput, Pressable } from "react-native";
 import { Dimensions } from "react-native";
@@ -40,7 +45,10 @@ export default function Login({ navigation }) {
           autoComplete='password'
         />
         <Pressable
-          style={[styles.button, { width: width * 0.7 }]}
+          style={({ pressed }) => [
+            { opacity: pressed ? 0.5 : 1.0, width: width * 0.7 },
+            styles.button,
+          ]}
           onPress={() => {
             alert("press");
           }}>
