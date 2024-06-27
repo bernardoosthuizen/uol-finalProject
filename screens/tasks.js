@@ -1,7 +1,6 @@
 /* 
--------------------- SOCIAL TASKER - Home ---------------------
-This is the home screen. It is the screen that the user sees
-when they are logged in.
+-------------------- SOCIAL TASKER - Tasks ---------------------
+This is the tasks screen. It is the screen that displays all the user's tasks.
 **/
 
 import { StatusBar } from "expo-status-bar";
@@ -10,8 +9,6 @@ import {
   Text,
   View,
   SafeAreaView,
-  Image,
-  Pressable,
 } from "react-native";
 import { Dimensions } from "react-native";
 import TaskListComponent from '../components/taskListComponent';
@@ -37,7 +34,7 @@ export default function Tasks({ navigation }) {
         </Text>
       </View>
       <View style={{ flex: 9, width: width * 0.9, marginVertical: "5%" }}>
-        <TaskListComponent tasks={taskdata} header={true}/>
+        <TaskListComponent tasks={taskdata} header={true} navigation={navigation}/>
       </View>
       <StatusBar style='auto' />
     </SafeAreaView>

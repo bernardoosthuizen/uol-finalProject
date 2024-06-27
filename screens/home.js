@@ -16,6 +16,7 @@ import {
 import { Dimensions } from "react-native";
 import { DataTable } from "react-native-paper";
 import TaskListComponent from '../components/taskListComponent';
+import LeaderboardListComponent from '../components/leaderboardListComponent';
 
 
 export function LeaderItem ({ item }) {
@@ -28,7 +29,7 @@ export function LeaderItem ({ item }) {
     );
 }
 
-export default function Home() {
+export default function Home({ navigation }) {
   const { width } = Dimensions.get("window");
 
   const leaderdata=[
@@ -58,26 +59,14 @@ export default function Home() {
         <Text style={styles.titleText}>Leader-board</Text>
         <View>
           <DataTable>
-            {leaderdata.map((item) => (
-              <DataTable.Row key={item.rank} style={styles.row}>
-                <DataTable.Cell style={{ flex: 1 }}>
-                  <Text style={{ fontSize: width * 0.05 }}>{item.rank}</Text>
-                </DataTable.Cell>
-                <DataTable.Cell style={{ flex: 2 }}>
-                  <Text style={{ fontSize: width * 0.05 }}>{item.name}</Text>
-                </DataTable.Cell>
-                <DataTable.Cell numeric style={{ flex: 2 }}>
-                  <Text style={{ fontSize: width * 0.05 }}>{item.score}</Text>
-                </DataTable.Cell>
-              </DataTable.Row>
-            ))}
+            <LeaderboardListComponent users={leaderdata}/>
           </DataTable>
         </View>
       </View>
       <View style={styles.tasksContainer}>
         <Text style={styles.titleText}>My Tasks</Text>
         <View>
-          <TaskListComponent tasks={taskdata} />
+          <TaskListComponent tasks={taskdata} navigation={navigation}/>
         </View>
       </View>
       <StatusBar style='auto' />

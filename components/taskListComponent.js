@@ -11,7 +11,7 @@ import { DataTable } from "react-native-paper";
 import { useState } from 'react';
 
 
-export default function TaskListComponent({ tasks, header }) {
+export default function TaskListComponent({ tasks, header, navigation }) {
     const { width } = Dimensions.get("window");
 
     const [sortDateDirection, setSortDateDirection] = useState(null);
@@ -57,7 +57,9 @@ export default function TaskListComponent({ tasks, header }) {
             <Pressable
               key={item.id}
               style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1.0 }]}
-              onPress={() => console.log("Pressed: " + item.id)}>
+              onPress={() => {
+                navigation.navigate("Task", { taskId: item.id });
+              }}>
               <DataTable.Row key={item.id} style={styles.row}>
                 <DataTable.Cell style={{ flex: 2 }}>
                   {/* Set image based on priority */}
