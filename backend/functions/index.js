@@ -1,15 +1,50 @@
 /**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
+ ---------- SOCIAL TASKER ----------
+ ---------- API Endpoints ----------
+  1. POST /new-user
+  2. GET /user/:id
+  3. GET /friends/:id
+  4. POST /add-friend
+  5. POST /new-task
+  6. GET /tasks/:userId
+  7. PUT /task/:taskId
+  8. DELETE /task/:taskId
+----------------------------------
  */
 
 const {onRequest} = require("firebase-functions/v2/https");
 const express = require("express");
+const { validationResult } = require("express-validator");
 const bodyParser = require("body-parser");
+const { initializeApp } = require("firebase-admin/app");
+const { userValidator } = require("./validators");
+const neo4j = require("neo4j-driver");
+
+require("dotenv").config();
+
+
+// For local testing only. Not required in production.
+// -------------------------------------------------------
+const admin = require("firebase-admin");
+const serviceAccount = require("../../uol-fp-firebase-adminsdk-h1olz-34e8ea07cc.json");
+// -------------------------------------------------------
+
+// Initialize Firebase Admin
+initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  projectId: "uol-fp",
+});
+
+// Initialize Neo4j driver
+const driver = neo4j.driver(
+  process.env.NEO4J_URI,
+  neo4j.auth.basic(process.env.NEO4J_USER, process.env.NEO4J_PASSWORD)
+);
+const session = driver.session();
+
+// Initialize Firestore database
+const db = admin.firestore();
+
 
 // Initialize express server
 const app = express();
@@ -17,17 +52,54 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-// API endpoints
+
+// -------------------------------------------------------
+// --------------   API endpoints ------------------------
+
 // Create a new user
-app.post("/new-user", (req, res) => {
-  const {name, email} = req.body;
+app.post("/new-user", userValidator, (req, res) => {
+  // Check for validation errors
+  const errors = validationResult(req);
+
+  // Return validation errors if any
+  if (!errors.isEmpty()) {
+    return res.status(422).send({ errors: errors.array() });
+  }
+
+  // Extract user data from request body
+  const {user_id, name, email} = req.body;
+  const userData = {user_id, name, email};
 
   // Add to firestore database
-
-  // Then add to Neo4j database
-  
-  res.status(201).send({name, email});
+  db.collection("users").add(userData)
+    .then(() => {
+      console.log("User added to Firestore database");
+      // Add user to Neo4j database
+      session
+        .run(
+          "CREATE (u:User {user_id: $user_id}) RETURN u",
+          { user_id: user_id }
+        )
+        .then(() => {
+          // Create task collection for user in firestore
+          const collectionName = `tasks-${user_id}`;
+          db.collection(collectionName)
+            .doc()
+            .set({ title: "Sample task" })
+            .then(() => {
+              // Send response
+              return res.status(201).send({ user_id: user_id });
+            })
+            .catch((error) => {
+              const { code, message } = error;
+              // Handle error
+              return res.status(code).send({ error: message });
+            });
+        });
+    })
+    
 });
+// -------------------------------------------------------
 
 // Get user by ID
 app.get("/user/:id", (req, res) => {
@@ -36,10 +108,12 @@ app.get("/user/:id", (req, res) => {
   // Get user doc from firestore
 
 
+
   res.status(200).send({id});
 });
+// -------------------------------------------------------
 
-// Get firends of a user
+// Get friends of a user
 app.get("/friends/:id", (req, res) => {
   const {id} = req.params;
 
@@ -48,6 +122,7 @@ app.get("/friends/:id", (req, res) => {
  
   res.status(200).send({id});
 });
+// -------------------------------------------------------
 
 // Add a friend
 app.post("/add-friend", (req, res) => {
@@ -57,6 +132,7 @@ app.post("/add-friend", (req, res) => {
 
   res.status(201).send({userId, friendId});
 });
+// -------------------------------------------------------
 
 // Add a new task
 app.post("/new-task", (req, res) => {
@@ -66,6 +142,7 @@ app.post("/new-task", (req, res) => {
 
   res.status(201).send({userId, task});
 });
+// -------------------------------------------------------
 
 // Get tasks of a user
 app.get("/tasks/:userId", (req, res) => {
@@ -76,6 +153,7 @@ app.get("/tasks/:userId", (req, res) => {
 
   res.status(200).send({id});
 });
+// -------------------------------------------------------
 
 // Update task
 app.put("/task/:taskId", (req, res) => {
@@ -87,6 +165,7 @@ app.put("/task/:taskId", (req, res) => {
 
   res.status(200).send({id, task});
 });
+// -------------------------------------------------------
 
 // Delete task
 app.delete("/task/:taskId", (req, res) => {
@@ -97,5 +176,15 @@ app.delete("/task/:taskId", (req, res) => {
 
   res.status(204).send();
 });
+// -------------------------------------------------------
 
-exports.app = onRequest(app);
+// exports.app = onRequest(app);
+
+
+// Comment out before deploying to firebase
+// for local testing only
+// -----------------------------------------
+const port = 3000;
+app.listen(port, () => {
+  console.log(`Social Tasker Backend listening on port ${port}`);
+});
