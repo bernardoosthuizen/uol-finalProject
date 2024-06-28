@@ -14,8 +14,8 @@ const userValidator = [
 ];
 
 const idValidator = [
-    body("id", "Field cannot be empty.").not().isEmpty(),
-    body("id", "Invalid ID").isString(),
+  body("userId", "Field cannot be empty.").not().isEmpty(),
+  body("userId", "Invalid ID").isString(),
 ];
 
 const taskValidator = [

@@ -5,7 +5,7 @@
 
 const {onRequest} = require("firebase-functions/v2/https");
 const express = require("express");
-const { validationResult } = require("express-validator");
+const { param, validationResult } = require("express-validator");
 const bodyParser = require("body-parser");
 const { initializeApp } = require("firebase-admin/app");
 const { userValidator, idValidator, taskValidator } = require("./validators");
@@ -95,7 +95,7 @@ app.post("/new-user", userValidator, (req, res) => {
 // -------------------------------------------------------
 
 // Delete a user by ID
-app.delete("/user/:id", idValidator, (req, res) => {
+app.delete("/user/:userId", idValidator, (req, res) => {
   // Check for validation errors
   const errors = validationResult(req);
 
@@ -103,15 +103,15 @@ app.delete("/user/:id", idValidator, (req, res) => {
   if (!errors.isEmpty()) {
     return res.status(422).send({ errors: errors.array() });
   }
-  const { id } = req.params;
+  const { userId } = req.params;
 
   // Delete user from Neo4j database
   session
-    .run("MATCH (u:User {user_id: $id}) DELETE u", { id: id })
+    .run("MATCH (u:User {user_id: $id}) DELETE u", { id: userId })
     .then(() => {
       // Delete user from firestore database
       db.collection("users")
-        .doc(id)
+        .doc(userId)
         .delete()
         .then(() => {
           // Send response
@@ -119,7 +119,7 @@ app.delete("/user/:id", idValidator, (req, res) => {
         })
         .then(() => {
           // Delete tasks collection from firestore
-          const collectionName = `tasks-${id}`;
+          const collectionName = `tasks-${userId}`;
           db.collection(collectionName)
             .get()
             .then((snapshot) => {
@@ -139,44 +139,50 @@ app.delete("/user/:id", idValidator, (req, res) => {
 // -------------------------------------------------------
 
 // Get user by ID
-app.get("/user/:id", idValidator, (req, res) => {
-  // Check for validation errors
-  const errors = validationResult(req);
+app.get(
+  "/user/:userId",
+  param("userId")
+    .isString()
+    .withMessage("Invalid user ID. Must be a string.")
+    .not()
+    .isEmpty()
+    .withMessage("User ID cannot be empty."),
+  (req, res) => {
+    const { userId } = req.params;
 
-  // Return validation errors if any
-  if (!errors.isEmpty()) {
-    return res.status(422).send({ errors: errors.array() });
+    // Get user doc from firestore
+    db.collection("users")
+      .doc(userId)
+      .get()
+      .then((doc) => {
+        if (!doc.exists) {
+          return res.status(404).send({ message: "User not found" });
+        }
+        const userData = doc.data();
+        return res.status(200).send(userData);
+      })
+      .catch((error) => {
+        // Handle error
+        const { code, message } = error;
+        return res.status(code).send({ error: message });
+      });
   }
-
-  const {id} = req.params;
-
-  // Get user doc from firestore
-  db.collection("users")
-    .doc(id)
-    .get()
-    .then((doc) => {
-      if (!doc.exists) {
-        return res.status(404).send({ message: "User not found" });
-      }
-      const userData = doc.data();
-      return res.status(200).send(userData);
-    })
-    .catch((error) => {
-      // Handle error
-      const { code, message } = error;
-      return res.status(code).send({ error: message });
-    });
-});
+);
 // -------------------------------------------------------
 
 // Get friends of a user
-app.get("/friends/:id", (req, res) => {
-  const {id} = req.params;
+app.get("/friends/:userId",
+  param("userId")
+    .isString()
+    .withMessage("Invalid user ID. Must be a string.")
+    .not()
+    .isEmpty()
+    .withMessage("User ID cannot be empty."), (req, res) => {
+  const { userId } = req.params;
 
   // Get friends from Neo4j database
 
- 
-  res.status(200).send({id});
+  res.status(200).send({ id });
 });
 // -------------------------------------------------------
 
@@ -239,14 +245,34 @@ app.post("/new-task", taskValidator, (req, res) => {
 // -------------------------------------------------------
 
 // Get tasks of a user
-app.get("/tasks/:userId", (req, res) => {
-  const {userId} = req.params;
+app.get(
+  "/tasks/:userId",
+  param("userId")
+    .isString()
+    .withMessage("Invalid user ID. Must be a string.")
+    .not()
+    .isEmpty()
+    .withMessage("User ID cannot be empty."),
+  (req, res) => {
+    const { userId } = req.params;
 
-  // Get tasks from firestore database by user id
-
-
-  res.status(200).send({id});
-});
+    // Get tasks from firestore database by user id
+    db.collection(`tasks-${userId}`)
+      .get()
+      .then((snapshot) => {
+        const tasks = [];
+        snapshot.forEach((doc) => {
+          tasks.push(doc.data());
+        });
+        return res.status(200).send(tasks);
+      })
+      .catch((error) => {
+        // Handle error
+        const { code, message } = error;
+        return res.status(code).send({ error: message });
+      });
+  }
+);
 // -------------------------------------------------------
 
 // Update task
