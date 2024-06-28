@@ -11,5 +11,8 @@ const userValidator = [
   body("user_id", "Field cannot be empty.").isString().not().isEmpty(),
 ];
 
+const idValidator = [
+    body("id", "Field cannot be empty.").isString().not().isEmpty(),
+];
 
-module.exports = { userValidator };
+module.exports = { userValidator, idValidator };

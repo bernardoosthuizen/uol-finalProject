@@ -1,15 +1,6 @@
 /**
  ---------- SOCIAL TASKER ----------
  ---------- API Endpoints ----------
-  1. POST /new-user
-  2. GET /user/:id
-  3. GET /friends/:id
-  4. POST /add-friend
-  5. POST /new-task
-  6. GET /tasks/:userId
-  7. PUT /task/:taskId
-  8. DELETE /task/:taskId
-----------------------------------
  */
 
 const {onRequest} = require("firebase-functions/v2/https");
@@ -17,7 +8,7 @@ const express = require("express");
 const { validationResult } = require("express-validator");
 const bodyParser = require("body-parser");
 const { initializeApp } = require("firebase-admin/app");
-const { userValidator } = require("./validators");
+const { userValidator, idValidator } = require("./validators");
 const neo4j = require("neo4j-driver");
 
 require("dotenv").config();
@@ -71,15 +62,15 @@ app.post("/new-user", userValidator, (req, res) => {
   const userData = {user_id, name, email};
 
   // Add to firestore database
-  db.collection("users").add(userData)
+  db.collection("users")
+    .add(userData)
     .then(() => {
       console.log("User added to Firestore database");
       // Add user to Neo4j database
       session
-        .run(
-          "CREATE (u:User {user_id: $user_id}) RETURN u",
-          { user_id: user_id }
-        )
+        .run("CREATE (u:User {user_id: $user_id}) RETURN u", {
+          user_id: user_id,
+        })
         .then(() => {
           // Create task collection for user in firestore
           const collectionName = `tasks-${user_id}`;
@@ -89,16 +80,60 @@ app.post("/new-user", userValidator, (req, res) => {
             .then(() => {
               // Send response
               return res.status(201).send({ user_id: user_id });
-            })
-            .catch((error) => {
-              const { code, message } = error;
-              // Handle error
-              return res.status(code).send({ error: message });
             });
         });
     })
+    .catch((error) => {
+      const { code, message } = error;
+      // Handle error
+      return res.status(code).send({ error: message });
+    });
     
 });
+// -------------------------------------------------------
+
+// Delete a user by ID
+app.delete("/user/:id", idValidator, (req, res) => {
+  // Check for validation errors
+  const errors = validationResult(req);
+
+  // Return validation errors if any
+  if (!errors.isEmpty()) {
+    return res.status(422).send({ errors: errors.array() });
+  }
+  const { id } = req.params;
+
+  // Delete user from Neo4j database
+  session
+    .run("MATCH (u:User {user_id: $id}) DELETE u", { id: id })
+    .then(() => {
+      // Delete user from firestore database
+      db.collection("users")
+        .doc(id)
+        .delete()
+        .then(() => {
+          // Send response
+          return res.status(204).send({ message: "User deleted" });
+        })
+        .then(() => {
+          // Delete tasks collection from firestore
+          const collectionName = `tasks-${id}`;
+          db.collection(collectionName)
+            .get()
+            .then((snapshot) => {
+              snapshot.forEach((doc) => {
+                doc.ref.delete();
+              });
+            });
+        });
+    })
+    .catch((error) => {
+      // Handle error
+      const { code, message } = error;
+      res.status(code).send({ error: message });
+    });
+});
+
 // -------------------------------------------------------
 
 // Get user by ID
