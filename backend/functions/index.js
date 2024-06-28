@@ -276,14 +276,30 @@ app.get(
 // -------------------------------------------------------
 
 // Update task
-app.put("/task/:taskId", (req, res) => {
+app.put("/task/:taskId", taskValidator, (req, res) => {
+  // Check for validation errors
+  const errors = validationResult(req);
+
+  // Return validation errors if any
+  if (!errors.isEmpty()) {
+    return res.status(422).send({ errors: errors.array() });
+  }
+
   const { taskId } = req.params;
   const {task} = req.body;
 
   // Update task in firestore database by task id
-
-
-  res.status(200).send({id, task});
+  db.collection(`tasks-${user_id}`)
+    .doc(taskId)
+    .update(task)
+    .then(() => {
+      return res.status(200).send({ message: `Task ${task.title} updated.` });
+    })
+    .catch((error) => {
+      // Handle error
+      const { code, message } = error;
+      return res.status(code).send({ error: message });
+    });
 });
 // -------------------------------------------------------
 
