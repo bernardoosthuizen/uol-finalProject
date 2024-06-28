@@ -15,6 +15,7 @@ import Leaderboard from './screens/leaderboard';
 import Task from './screens/taskDetails';
 import EditTask from './screens/editTask';
 import FriendRequest from './screens/friendRequests';
+import FindFriends from './screens/findFriends';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -107,7 +108,7 @@ function LoggedInRoutes() {
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName='Friend Request'>
+      <Stack.Navigator initialRouteName='LoggedInRoutes'>
         <Stack.Screen
           name='Login'
           component={Login}
@@ -131,6 +132,11 @@ export default function App() {
         <Stack.Screen
           name='Friend Request'
           component={FriendRequest}
+          options={{ title: false, headerBackTitle: false }}
+        />
+        <Stack.Screen
+          name='Find Friends'
+          component={FindFriends}
           options={{ title: false, headerBackTitle: false }}
         />
         <Stack.Screen

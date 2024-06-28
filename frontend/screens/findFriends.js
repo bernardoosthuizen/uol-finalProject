@@ -16,19 +16,25 @@ import {
 } from "react-native";
 import { Dimensions  } from "react-native";
 import { DataTable } from "react-native-paper";
+import { Searchbar } from "react-native-paper";
+import { useState } from 'react';
 
 
-export default function FriendRequest() {
+export default function FindFriends() {
   const { width } = Dimensions.get("window");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const requests = [
+  const friends = [
     {
       id: 1,
       name: "John Doe",
+      score: 100,
     },
     {
       id: 2,
       name: "Jane Doe",
+      score: 200,
     }
   ];
   return (
@@ -40,44 +46,52 @@ export default function FriendRequest() {
             color: "#4F83A5",
             fontWeight: "bold",
           }}>
-          Friend Requests
+          Find Friends
         </Text>
       </View>
+      <Searchbar
+        placeholder='Search'
+        onChangeText={(text)=>{
+            if (text != "") {
+              setLoading(true);
+            } else {
+              setLoading(false);
+            }
+            setSearchQuery(text)
+          }
+        }
+        value={searchQuery}
+        mode='view'
+        loading={loading}
+        style={{ width: width * 0.8,marginBottom: "5%", backgroundColor: "#F2F2F2"}}
+        rippleColor={"#4F83A5"}
+        showDivider={false}
+      />
       <View style={styles.tableContainer}>
         <DataTable>
           <ScrollView>
-            {requests.map((item) => (
+            {friends.map((item) => (
               <DataTable.Row key={item.id} style={styles.row}>
-                <DataTable.Cell style={{ flex: 4 }}>
+                <DataTable.Cell style={{ flex: 2 }}>
                   <Text style={{ fontSize: width * 0.04 }}>{item.name}</Text>
                 </DataTable.Cell>
-                <DataTable.Cell numeric style={{ flex: 2 }}>
-                  <Pressable
-                    style={({ pressed }) => [
-                      { opacity: pressed ? 0.5 : 1.0, width: width * 0.7 },
-                      styles.button,
-                    ]}
-                    onPress={() => {
-                      console.log("Accept");
-                    }}>
-                    <Image
-                      style={{ width: 30, height: 30 }}
-                      source={require("../assets/icons/accept.png")}
-                    />
-                  </Pressable>
+                <DataTable.Cell
+                  numeric
+                  style={{ flex: 2, justifyContent: "center" }}>
+                  <Text style={{ fontSize: width * 0.04 }}>{item.score}</Text>
                 </DataTable.Cell>
-                <DataTable.Cell numeric style={{ flex: 2 }}>
+                <DataTable.Cell style={{ flex: 1 }}>
                   <Pressable
                     style={({ pressed }) => [
                       { opacity: pressed ? 0.5 : 1.0, width: width * 0.7 },
                       styles.button,
                     ]}
                     onPress={() => {
-                      console.log("Reject");
+                      console.log("Added");
                     }}>
                     <Image
                       style={{ width: 30, height: 30 }}
-                      source={require("../assets/icons/reject.png")}
+                      source={require("../assets/icons/add.png")}
                     />
                   </Pressable>
                 </DataTable.Cell>
