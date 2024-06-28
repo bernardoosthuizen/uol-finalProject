@@ -8,7 +8,7 @@ const express = require("express");
 const { validationResult } = require("express-validator");
 const bodyParser = require("body-parser");
 const { initializeApp } = require("firebase-admin/app");
-const { userValidator, idValidator } = require("./validators");
+const { userValidator, idValidator, taskValidator } = require("./validators");
 const neo4j = require("neo4j-driver");
 
 require("dotenv").config();
@@ -63,13 +63,15 @@ app.post("/new-user", userValidator, (req, res) => {
 
   // Add to firestore database
   db.collection("users")
-    .add(userData)
+    .doc(user_id)
+    .set(userData)
     .then(() => {
       console.log("User added to Firestore database");
       // Add user to Neo4j database
       session
-        .run("CREATE (u:User {user_id: $user_id}) RETURN u", {
+        .run("CREATE (u:User {user_id: $user_id, score: $score}) RETURN u", {
           user_id: user_id,
+          score: 0,
         })
         .then(() => {
           // Create task collection for user in firestore
@@ -137,14 +139,33 @@ app.delete("/user/:id", idValidator, (req, res) => {
 // -------------------------------------------------------
 
 // Get user by ID
-app.get("/user/:id", (req, res) => {
+app.get("/user/:id", idValidator, (req, res) => {
+  // Check for validation errors
+  const errors = validationResult(req);
+
+  // Return validation errors if any
+  if (!errors.isEmpty()) {
+    return res.status(422).send({ errors: errors.array() });
+  }
+
   const {id} = req.params;
 
   // Get user doc from firestore
-
-
-
-  res.status(200).send({id});
+  db.collection("users")
+    .doc(id)
+    .get()
+    .then((doc) => {
+      if (!doc.exists) {
+        return res.status(404).send({ message: "User not found" });
+      }
+      const userData = doc.data();
+      return res.status(200).send(userData);
+    })
+    .catch((error) => {
+      // Handle error
+      const { code, message } = error;
+      return res.status(code).send({ error: message });
+    });
 });
 // -------------------------------------------------------
 
@@ -170,12 +191,50 @@ app.post("/add-friend", (req, res) => {
 // -------------------------------------------------------
 
 // Add a new task
-app.post("/new-task", (req, res) => {
-  const {userId, task} = req.body;
+app.post("/new-task", taskValidator, (req, res) => {
+  // Check for validation errors
+  const errors = validationResult(req);
 
+  // Return validation errors if any
+  if (!errors.isEmpty()) {
+    return res.status(422).send({ errors: errors.array() });
+  }
+
+  const {
+    title,
+    description,
+    details,
+    status,
+    due_date,
+    priority,
+    user_id,
+  } = req.body;
+
+  // Extract task data from request body
+  const task = {
+    title,
+    description,
+    details,
+    status,
+    due_date,
+    priority,
+    user_id,
+  };
+
+  // Generate a new document reference with an auto-generated ID
+  const docRef = db.collection(`tasks-${user_id}`).doc();
   // Add task to firestore database
-
-  res.status(201).send({userId, task});
+  docRef
+    .set(task)
+    .then(() => {
+      // Now you can use docRef.id to get the document ID
+      return res.status(201).send({ task: task.title, docId: docRef.id });
+    })
+    .catch((error) => {
+      // Handle error
+      const { code, message } = error;
+      return res.status(code).send({ error: message });
+    });
 });
 // -------------------------------------------------------
 
