@@ -288,14 +288,25 @@ app.put("/task/:taskId", (req, res) => {
 // -------------------------------------------------------
 
 // Delete task
-app.delete("/task/:taskId", (req, res) => {
-  const { taskId } = req.params;
+app.delete(
+  "/task/:userId/:taskId",
+  (req, res) => {
+    const { userId, taskId } = req.params;
 
-  // Delete task from firestore database by task id
-
-
-  res.status(204).send();
-});
+    // Delete task from firestore database by task id
+    db.collection(`tasks-${userId}`)
+      .doc(taskId)
+      .delete()
+      .then(() => {
+        return res.status(204).send({ message: `Task ${taskId} deleted`});
+      })
+      .catch((error) => {
+        // Handle error
+        const { code, message } = error;
+        return res.status(code).send({ error: message });
+      });
+  }
+);
 // -------------------------------------------------------
 
 // exports.app = onRequest(app);
