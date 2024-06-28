@@ -69,8 +69,9 @@ app.post("/new-user", userValidator, (req, res) => {
       console.log("User added to Firestore database");
       // Add user to Neo4j database
       session
-        .run("CREATE (u:User {user_id: $user_id, score: $score}) RETURN u", {
+        .run("CREATE (u:User {user_id: $user_id, name: $name, score: $score}) RETURN u", {
           user_id: user_id,
+          name: name,
           score: 0,
         })
         .then(() => {
@@ -181,8 +182,20 @@ app.get("/friends/:userId",
   const { userId } = req.params;
 
   // Get friends from Neo4j database
-
-  res.status(200).send({ id });
+  session
+    .run(
+      "MATCH (u:User {user_id: $userId})-[:FRIEND]->(f:User) RETURN f",
+      { userId }
+    )
+    .then((result) => {
+      const friends = result.records.map((record) => record.get("f").properties);
+      return res.status(200).send(friends);
+    })
+    .catch((error) => {
+      // Handle error
+      const { code, message } = error;
+      return res.status(code).send({ error: message });
+    });
 });
 // -------------------------------------------------------
 
@@ -191,8 +204,33 @@ app.post("/add-friend", (req, res) => {
   const {userId, friendId} = req.body;
 
   // Modify Neo4j database
+  session
+    .run(
+      "MATCH (u:User {user_id: $userId}), (f:User {user_id: $friendId}) CREATE (u)-[:FRIEND]->(f)",
+      { userId, friendId }
+    )
+    .then(() => {
+      return res.status(201).send({ message: "Friend added"});
+    });
+});
+// -------------------------------------------------------
 
-  res.status(201).send({userId, friendId});
+// Search for a user
+app.post("/search-friend/:userName", (req, res) => {
+  const {userName} = req.params;
+
+  // Search for user in Neo4j database
+  session
+    .run("MATCH (u:User) WHERE u.name CONTAINS $userName RETURN u", { userName })
+    .then((result) => {
+      const users = result.records.map((record) => record.get("u").properties);
+      return res.status(200).send(users);
+    })
+    .catch((error) => {
+      // Handle error
+      const { code, message } = error;
+      return res.status(code).send({ error: message });
+    });
 });
 // -------------------------------------------------------
 
