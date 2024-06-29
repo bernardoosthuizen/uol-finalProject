@@ -6,6 +6,7 @@ import {
   reauthenticateWithCredential,
   deleteUser,
   EmailAuthProvider,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 
 // Create context
@@ -16,11 +17,11 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const auth = getAuth();
+  console.log("AuthProvider: Loading", loading);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
-      console.log(user);
       setLoading(false);
     });
 
@@ -32,8 +33,14 @@ export const AuthProvider = ({ children }) => {
     return signOut(auth); // Use signOut from Firebase auth
   };
 
+  // Reset password function
+  const resetPassword = () => {
+    return sendPasswordResetEmail(auth, currentUser.email);
+  };
+
   // Delete account function
   const deleteAccount = (password) => {
+    setLoading(true);
     const auth = getAuth();
     const user = auth.currentUser;
 
@@ -60,7 +67,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, loading, logout, deleteAccount }}>
+    <AuthContext.Provider
+      value={{ currentUser, loading, setLoading, logout, deleteAccount, resetPassword }}>
       {!loading && children}
     </AuthContext.Provider>
   );

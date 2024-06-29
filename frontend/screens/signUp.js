@@ -31,7 +31,7 @@ export default function Login({ navigation }) {
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Signed in
-        navigation.navigate("LoggedInRoutes");
+        console.log("Signed in");
         // ...
       })
       .catch((error) => {

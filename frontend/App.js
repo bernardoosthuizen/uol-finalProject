@@ -5,7 +5,6 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   Image
 } from "react-native";
-import {useState} from 'react';
 import Login from './screens/login';
 import SignUp from './screens/signUp';
 import Home from './screens/home';
@@ -19,6 +18,7 @@ import FriendRequest from './screens/friendRequests';
 import FindFriends from './screens/findFriends';
 import { AuthProvider } from './contextProviders/authContext';
 import { useAuth } from './contextProviders/authContext';
+import LoadingOverlay from './components/loadingOverlay';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -158,7 +158,8 @@ function PublicRoutes() {
 
 function MainNavigator() {
 
-  const { currentUser } = useAuth();
+  const { currentUser, loading } = useAuth();
+  console.log('MainNavigator: Loading',loading)
 
   return (
     <NavigationContainer>

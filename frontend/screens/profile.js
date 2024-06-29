@@ -18,8 +18,7 @@ import { useAuth } from '../contextProviders/authContext';
 
 export default function Profile() {
   const { width } = Dimensions.get("window");
-  const { logout } = useAuth();
-  const { deleteAccount } = useAuth();
+  const { logout, deleteAccount, resetPassword } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -98,40 +97,23 @@ export default function Profile() {
         </Pressable>
         <Pressable
           onPress={() => {
-            Alert.prompt(
-              "Enter new password",
-              "",
+            Alert.alert(
+              "Are you Sure you want to reset your password?",
+              "An email will be sent to your email address with a link to reset your password. Please enter your new password.",
               [
                 {
                   text: "Cancel",
                   style: "cancel",
                 },
                 {
-                  text: "OK",
-                  onPress: (password1) =>
-                    Alert.prompt(
-                      "Confirm new password",
-                      "",
-                      [
-                        {
-                          text: "Cancel",
-                          style: "cancel",
-                        },
-                        {
-                          text: "OK",
-                          onPress: (password2) => {
-                            if (password1 === password2) {
-                              console.log("OK Pressed, password: " + password1);
-                            } else {
-                              alert(
-                                "Passwords do not match. Please try again."
-                              );
-                            }
-                          },
-                        },
-                      ],
-                      "secure-text"
-                    ),
+                  text: "YES",
+                  onPress: () => {
+                    try {
+                      resetPassword();
+                    } catch (error) {
+                      console.error("Failed to reset password", error);
+                    }
+                  }, 
                 },
               ],
               "secure-text"

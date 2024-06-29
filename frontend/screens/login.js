@@ -8,6 +8,7 @@ import { StyleSheet, Text, View, SafeAreaView, Image, TextInput, Pressable } fro
 import { Dimensions } from "react-native";
 import { useState } from 'react';
 import {auth} from '../services/firebaseConfig';
+import { useAuth } from '../contextProviders/authContext';
 import { signInWithEmailAndPassword } from "firebase/auth";
 
 export default function Login({ navigation }) {
@@ -15,12 +16,14 @@ export default function Login({ navigation }) {
 
     const [email, onChangeEmail] =useState('');
     const [password, onChangePassword] =useState('');
+    const {loading, setLoading} = useAuth();
 
     const signIn = () => {
+        setLoading(true);
         signInWithEmailAndPassword(auth, email, password)
         .then(() => {
             // Signed in
-            navigation.navigate('LoggedInRoutes');
+            console.log('Signed in');
             // ...
         })
         .catch((error) => {
