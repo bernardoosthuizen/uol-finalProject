@@ -5,20 +5,28 @@ when they are logged in.
 **/
 
 import { StatusBar } from "expo-status-bar";
+import { useState } from 'react';
 import {
     StyleSheet,
     Text,
     View,
     SafeAreaView,
-    Pressable
+    Pressable,
 } from "react-native";
 import { Dimensions, Alert } from "react-native";
 import { useAuth } from '../contextProviders/authContext';
+import { Snackbar } from "react-native-paper";
 
 
 export default function Profile() {
   const { width } = Dimensions.get("window");
   const { logout, deleteAccount, resetPassword } = useAuth();
+
+  // Snack bar state
+  const [snackBarVisible, setSnackBarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
+
+  const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
 
   const handleLogout = async () => {
     try {
@@ -27,7 +35,8 @@ export default function Profile() {
       // Redirect user or update UI accordingly
 
     } catch (error) {
-      console.error("Failed to log out", error);
+      setSnackBarVisible(true);
+      setSnackbarMessage("Failed to log out", error);
     }
   };
 
@@ -37,7 +46,8 @@ export default function Profile() {
       console.log("Account deleted successfully");
       // Redirect user or update UI accordingly
     } catch (error) {
-      console.error("Failed to delete account", error);
+      setSnackBarVisible(true);
+      setSnackbarMessage("Failed to delete account", error);
     }
   };
 
@@ -73,24 +83,17 @@ export default function Profile() {
       <View style={styles.linkContainer}>
         <Pressable
           onPress={() => {
-            Alert.alert(
-              "Logout",
-              "Are you sure you want to logout?",
-              [
-                {
-                  text: "Cancel",
-                  style: "cancel",
-                },
-                {
-                  text: "Yes",
-                  onPress: () => handleLogout() ,
-                },
-              ]
-            );
-          
-          }
-          }
-        >
+            Alert.alert("Logout", "Are you sure you want to logout?", [
+              {
+                text: "Cancel",
+                style: "cancel",
+              },
+              {
+                text: "Yes",
+                onPress: () => handleLogout(),
+              },
+            ]);
+          }}>
           <Text style={{ color: "black", textDecorationLine: "underline" }}>
             Logout
           </Text>
@@ -111,9 +114,10 @@ export default function Profile() {
                     try {
                       resetPassword();
                     } catch (error) {
-                      console.error("Failed to reset password", error);
+                      setSnackBarVisible(true);
+                      setSnackbarMessage("Failed to reset password", error);
                     }
-                  }, 
+                  },
                 },
               ],
               "secure-text"
@@ -136,8 +140,7 @@ export default function Profile() {
                 {
                   text: "Yes",
                   style: "destructive",
-                  onPress: (password) =>
-                    handleDeleteAccount(password),
+                  onPress: (password) => handleDeleteAccount(password),
                 },
               ],
               "secure-text"
@@ -148,6 +151,20 @@ export default function Profile() {
           </Text>
         </Pressable>
       </View>
+      {/* Snackbars - display errors to user */}
+      <Snackbar
+        visible={snackBarVisible}
+        onDismiss={onDismissSnackBar}
+        rippleColor={"#4F83A5"}
+        action={{
+          label: "Dismiss",
+          textColor: "#4F83A5",
+          onPress: () => {
+            // Do something
+          },
+        }}>
+        <Text style={{ color: "white" }}>{snackbarMessage}</Text>
+      </Snackbar>
       <StatusBar style='auto' />
     </SafeAreaView>
   );
