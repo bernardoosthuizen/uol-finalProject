@@ -7,12 +7,30 @@ import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View, SafeAreaView, Image, TextInput, Pressable } from "react-native";
 import { Dimensions } from "react-native";
 import { useState } from 'react';
+import {auth} from '../services/firebaseConfig';
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 export default function Login({ navigation }) {
     const {width} = Dimensions.get('window');
 
     const [email, onChangeEmail] =useState('');
     const [password, onChangePassword] =useState('');
+
+    const signIn = () => {
+        signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+            // Signed in
+            navigation.navigate('LoggedInRoutes');
+            // ...
+        })
+        .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log(errorMessage);
+            // ..
+        });
+    }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.logoContainer}>
@@ -50,7 +68,7 @@ export default function Login({ navigation }) {
             styles.button,
           ]}
           onPress={() => {
-            alert("press");
+            signIn();
           }}>
           <Text style={{ color: "white" }}>Sign In</Text>
         </Pressable>

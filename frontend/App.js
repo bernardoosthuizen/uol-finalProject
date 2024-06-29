@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   Image
 } from "react-native";
+import {useState} from 'react';
 import Login from './screens/login';
 import SignUp from './screens/signUp';
 import Home from './screens/home';
@@ -16,6 +17,8 @@ import Task from './screens/taskDetails';
 import EditTask from './screens/editTask';
 import FriendRequest from './screens/friendRequests';
 import FindFriends from './screens/findFriends';
+import { AuthProvider } from './contextProviders/authContext';
+import { useAuth } from './contextProviders/authContext';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -104,48 +107,86 @@ function LoggedInRoutes() {
   );
 }
 
+function ProtectedRoutes() {
+  return (
+    <Stack.Navigator initialRouteName='LoggedInRoutes'>
+      <Stack.Screen
+        name='Task'
+        component={Task}
+        options={{ title: false, headerBackTitle: false }}
+      />
+      <Stack.Screen
+        name='Edit Task'
+        component={EditTask}
+        options={{ title: false, headerBackTitle: false }}
+      />
+      <Stack.Screen
+        name='Friend Request'
+        component={FriendRequest}
+        options={{ title: false, headerBackTitle: false }}
+      />
+      <Stack.Screen
+        name='Find Friends'
+        component={FindFriends}
+        options={{ title: false, headerBackTitle: false }}
+      />
+      <Stack.Screen
+        name='LoggedInRoutes'
+        component={LoggedInRoutes}
+        options={{ headerShown: false }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function PublicRoutes() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name='Login'
+        component={Login}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name='SignUp'
+        component={SignUp}
+        options={{ headerShown: false }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function MainNavigator() {
+
+  const { currentUser } = useAuth();
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        {currentUser ? (
+          <Stack.Screen
+            name='ProtectedRoutes'
+            component={ProtectedRoutes}
+            options={{ headerShown: false }}
+          />
+        ) : (
+          <Stack.Screen
+            name='PublicRoutes'
+            component={PublicRoutes}
+            options={{ headerShown: false }}
+          />
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName='LoggedInRoutes'>
-        <Stack.Screen
-          name='Login'
-          component={Login}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name='SignUp'
-          component={SignUp}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name='Task'
-          component={Task}
-          options={{ title: false, headerBackTitle: false }}
-        />
-        <Stack.Screen
-          name='Edit Task'
-          component={EditTask}
-          options={{ title: false, headerBackTitle: false }}
-        />
-        <Stack.Screen
-          name='Friend Request'
-          component={FriendRequest}
-          options={{ title: false, headerBackTitle: false }}
-        />
-        <Stack.Screen
-          name='Find Friends'
-          component={FindFriends}
-          options={{ title: false, headerBackTitle: false }}
-        />
-        <Stack.Screen
-          name='LoggedInRoutes'
-          component={LoggedInRoutes}
-          options={{ headerShown: false }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <AuthProvider>
+      <MainNavigator />
+    </AuthProvider>
   );
 }
 

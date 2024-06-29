@@ -16,12 +16,32 @@ import {
 } from "react-native";
 import { Dimensions } from "react-native";
 import { useState } from "react";
+import {auth} from '../services/firebaseConfig';
+import { createUserWithEmailAndPassword} from 'firebase/auth';
+
 
 export default function Login({ navigation }) {
   const { width } = Dimensions.get("window");
 
+  const [name, onChangeName] = useState("");
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
+
+  const signUp = () => {
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        navigation.navigate("LoggedInRoutes");
+        // ...
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log(errorMessage);
+        // ..
+      });
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.logoContainer}>
@@ -43,8 +63,8 @@ export default function Login({ navigation }) {
         <TextInput
           mode='outlined'
           style={[styles.input, { width: width * 0.7 }]}
-          onChangeText={onChangeEmail}
-          value={email}
+          onChangeText={onChangeName}
+          value={name}
           placeholder='Username'
           autoComplete='username'
         />
@@ -70,7 +90,7 @@ export default function Login({ navigation }) {
             styles.button,
           ]}
           onPress={() => {
-            alert("press");
+            signUp();
           }}>
           <Text style={{ color: "white" }}>Sign Up</Text>
         </Pressable>
