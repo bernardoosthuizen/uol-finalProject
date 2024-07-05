@@ -20,7 +20,7 @@ import { Snackbar } from "react-native-paper";
 
 export default function Profile() {
   const { width } = Dimensions.get("window");
-  const { logout, deleteAccount, resetPassword } = useAuth();
+  const { logout, deleteAccount, resetPassword, currentUser } = useAuth();
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
@@ -41,14 +41,18 @@ export default function Profile() {
   };
 
   const handleDeleteAccount = async (password) => {
-    try {
-      await deleteAccount(password); // Call deleteAccount
-      console.log("Account deleted successfully");
-      // Redirect user or update UI accordingly
-    } catch (error) {
+    // UserId from context
+    const userId = currentUser.uid;
+    
+    deleteAccount(password)
+    .then(()=>{
+      console.log("Account deleted successfully", userId);
+    })
+    .catch((error) => {
+      console.error("Error during account deletion:", error);
       setSnackBarVisible(true);
-      setSnackbarMessage("Failed to delete account", error);
-    }
+      setSnackbarMessage("Failed to delete account", error.message);
+    });
   };
 
   return (

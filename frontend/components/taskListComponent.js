@@ -63,7 +63,7 @@ export default function TaskListComponent({ tasks, header, navigation }) {
               <DataTable.Row key={item.id} style={styles.row}>
                 <DataTable.Cell style={{ flex: 2 }}>
                   {/* Set image based on priority */}
-                  {item.prority === "high" ? (
+                  {item.priority === "high" && (
                     <Image
                       source={require("../assets/icons/high-priority.png")}
                       style={{
@@ -71,15 +71,17 @@ export default function TaskListComponent({ tasks, header, navigation }) {
                       }}
                       alt='priority icon'
                     />
-                  ) : item.prority === "medium" ? (
+                  )} 
+                  {(item.priority === "medium" && (
                     <Image
                       source={require("../assets/icons/medium-priority.png")}
                       style={{
                         resizeMode: "contain",
                       }}
                       alt='priority icon'
-                    />
-                  ) : (
+                    />)
+                  )}
+                  {item.priority === "low" && (
                     <Image
                       source={require("../assets/icons/low-priority.png")}
                       style={{

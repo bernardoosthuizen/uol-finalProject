@@ -8,7 +8,7 @@ const express = require("express");
 const { param, validationResult } = require("express-validator");
 const bodyParser = require("body-parser");
 const { initializeApp } = require("firebase-admin/app");
-const { userValidator, idValidator, taskValidator } = require("./validators");
+const { userValidator, idValidator, taskValidator, apiKeyMiddleware } = require("./validators");
 const neo4j = require("neo4j-driver");
 const { rateLimit } = require("express-rate-limit");
 
@@ -61,7 +61,7 @@ app.use(limiter);
 // --------------   API endpoints ------------------------
 
 // Create a new user
-app.post("/new-user", userValidator, (req, res) => {
+app.post("/new-user",apiKeyMiddleware, userValidator, (req, res) => {
   // Check for validation errors
   const errors = validationResult(req);
 
@@ -101,6 +101,31 @@ app.post("/new-user", userValidator, (req, res) => {
     })
     .catch((error) => {
       const { code, message } = error;
+      // Delete any info that was created in Neo4j and Firestore if an error occurs
+      console.log("Error adding user. Deleting user.");
+
+      
+      try {
+        // Delete user from firebase auth if created
+        admin.auth().deleteUser(user_id);
+      } catch (error) {
+        console.log("Error deleting user from firebase auth", error);
+      }
+
+      try {
+        // Delete user in firestore if created
+        db.collection("users").doc(user_id).delete();
+      } catch (error) {
+        console.log("Error deleting user from firestore", error);
+      }
+
+      try {
+        // Delete user in Neo4j if created
+        session.run("MATCH (u:User {user_id: $user_id}) DELETE u", { user_id });
+      } catch (error) {
+        console.log("Error deleting user from Neo4j", error);
+      }
+
       // Handle error
       return res.status(code).send({ error: message });
     });
@@ -109,14 +134,8 @@ app.post("/new-user", userValidator, (req, res) => {
 // -------------------------------------------------------
 
 // Delete a user by ID
-app.delete("/user/:userId", idValidator, (req, res) => {
-  // Check for validation errors
-  const errors = validationResult(req);
+app.delete("/user/:userId", apiKeyMiddleware, (req, res) => {
 
-  // Return validation errors if any
-  if (!errors.isEmpty()) {
-    return res.status(422).send({ errors: errors.array() });
-  }
   const { userId } = req.params;
 
   // Delete user from Neo4j database
@@ -128,10 +147,6 @@ app.delete("/user/:userId", idValidator, (req, res) => {
         .doc(userId)
         .delete()
         .then(() => {
-          // Send response
-          return res.status(204).send({ message: "User deleted" });
-        })
-        .then(() => {
           // Delete tasks collection from firestore
           const collectionName = `tasks-${userId}`;
           db.collection(collectionName)
@@ -141,6 +156,9 @@ app.delete("/user/:userId", idValidator, (req, res) => {
                 doc.ref.delete();
               });
             });
+        })
+        .then(() => {
+          return res.status(204).send({ message: "User deleted" });
         });
     })
     .catch((error) => {
@@ -248,7 +266,8 @@ app.post("/search-friend/:userName", (req, res) => {
 // -------------------------------------------------------
 
 // Add a new task
-app.post("/new-task", taskValidator, (req, res) => {
+app.post("/new-task", apiKeyMiddleware, taskValidator, (req, res) => {
+  console.log("New task request received");
   // Check for validation errors
   const errors = validationResult(req);
 
@@ -298,6 +317,7 @@ app.post("/new-task", taskValidator, (req, res) => {
 // Get tasks of a user
 app.get(
   "/tasks/:userId",
+  apiKeyMiddleware,
   param("userId")
     .isString()
     .withMessage("Invalid user ID. Must be a string.")
@@ -313,9 +333,54 @@ app.get(
       .then((snapshot) => {
         const tasks = [];
         snapshot.forEach((doc) => {
-          tasks.push(doc.data());
+          tasks.push({
+            id: doc.id, // Include the document ID
+            ...doc.data(), // Spread the rest of the task data
+          });
         });
         return res.status(200).send(tasks);
+      })
+      .catch((error) => {
+        // Handle error
+        const { code, message } = error;
+        return res.status(code).send({ error: message });
+      });
+  }
+);
+// -------------------------------------------------------
+
+// Get task by ID
+app.get(
+  "/task/:userId/:taskId",
+  apiKeyMiddleware,
+  param("userId")
+    .isString()
+    .withMessage("Invalid user ID. Must be a string.")
+    .not()
+    .isEmpty()
+    .withMessage("User ID cannot be empty."),
+  param("taskId")
+    .isString()
+    .withMessage("Invalid task ID. Must be a string.")
+    .not()
+    .isEmpty()
+    .withMessage("Task ID cannot be empty."),
+  (req, res) => {
+    console.log("getting");
+
+
+    const { userId, taskId } = req.params;
+
+    // Get task from firestore database by task id
+    db.collection(`tasks-${userId}`)
+      .doc(taskId)
+      .get()
+      .then((doc) => {
+        if (!doc.exists) {
+          return res.status(404).send({ message: "Task not found" });
+        }
+        const task = doc.data();
+        return res.status(200).send(task);
       })
       .catch((error) => {
         // Handle error

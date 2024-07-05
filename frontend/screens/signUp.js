@@ -18,6 +18,7 @@ import { Dimensions } from "react-native";
 import { useState } from "react";
 import {auth} from '../services/firebaseConfig';
 import { createUserWithEmailAndPassword} from 'firebase/auth';
+import { Snackbar } from "react-native-paper";
 
 
 export default function Login({ navigation }) {
@@ -27,20 +28,38 @@ export default function Login({ navigation }) {
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
 
+  // Snack bar state
+  const [snackBarVisible, setSnackBarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
+  const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
+
   const signUp = () => {
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        // Signed in
-        console.log("Signed in");
-        // ...
+        // Send post request to backend
+        const user_id = userCredential.user.uid;
+        const userData = { name, email, user_id };
+        fetch("http://localhost:3000/new-user", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
+          },
+          body: JSON.stringify(userData),
+        })
+          .then((response) => {
+            response.json();
+            console.log("Signed in");
+          })
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
+        setSnackBarVisible(true);
+        setSnackbarMessage("Failed to sign up.", errorMessage);
         console.log(errorMessage);
-        // ..
       });
-  }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -95,6 +114,20 @@ export default function Login({ navigation }) {
           <Text style={{ color: "white" }}>Sign Up</Text>
         </Pressable>
       </View>
+      {/* Snackbars - display errors to user */}
+      <Snackbar
+        visible={snackBarVisible}
+        onDismiss={onDismissSnackBar}
+        rippleColor={"#4F83A5"}
+        action={{
+          label: "Dismiss",
+          textColor: "#4F83A5",
+          onPress: () => {
+            // Do something
+          },
+        }}>
+        <Text style={{ color: "white" }}>{snackbarMessage}</Text>
+      </Snackbar>
       <StatusBar style='auto' />
     </SafeAreaView>
   );
