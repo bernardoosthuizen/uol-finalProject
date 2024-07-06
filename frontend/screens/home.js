@@ -4,9 +4,9 @@ This is the home screen. It is the screen that the user sees
 when they are logged in.
 **/
 
+// Import necessary modules
 import { StatusBar } from "expo-status-bar";
 import {
-    Pressable,
     StyleSheet,
     Text,
     View,
@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import { Dimensions } from "react-native";
 import { DataTable } from "react-native-paper";
+// import custom components
 import TaskListComponent from '../components/taskListComponent';
 import LeaderboardListComponent from '../components/leaderboardListComponent';
 

@@ -1,3 +1,9 @@
+/* 
+-------------------- AUTH CONTEXT ---------------------
+This file is used to create an AuthContext that can be used to manage user authentication state.
+**/
+
+// Import the functions from the SDKs and modules
 import { createContext, useContext, useEffect, useState } from "react";
 import {
   getAuth,
@@ -14,16 +20,19 @@ const AuthContext = createContext();
 
 // Provider component
 export const AuthProvider = ({ children }) => {
+  // State to store current user
   const [currentUser, setCurrentUser] = useState(null);
+  // State to store loading status
   const [loading, setLoading] = useState(true);
+  // Firebase auth instance
   const auth = getAuth();
 
+  // Subscribe to auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setLoading(false);
     });
-
     return unsubscribe; // Cleanup subscription on unmount
   }, []);
 
@@ -80,10 +89,18 @@ export const AuthProvider = ({ children }) => {
       return Promise.reject("No user is currently signed in.");
     }
   };
-
+  // Return the provider 
+  // This provider wraps the entire app in App.js
   return (
     <AuthContext.Provider
-      value={{ currentUser, loading, setLoading, logout, deleteAccount, resetPassword }}>
+      value={{
+        currentUser,
+        loading,
+        setLoading,
+        logout,
+        deleteAccount,
+        resetPassword,
+      }}>
       {!loading && children}
     </AuthContext.Provider>
   );

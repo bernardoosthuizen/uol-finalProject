@@ -4,6 +4,7 @@ This is the home screen. It is the screen that the user sees
 when they are logged in.
 **/
 
+// Import necessary modules
 import { StatusBar } from "expo-status-bar";
 import { useState, useEffect } from 'react';
 import {
@@ -20,7 +21,9 @@ import { Snackbar } from "react-native-paper";
 
 export default function Profile({ navigation}) {
   const { width } = Dimensions.get("window");
+  // Auth context
   const { logout, deleteAccount, resetPassword, currentUser } = useAuth();
+  // User data state
   const [userData, setUserData] = useState();
   const [isLoading, setIsLoading] = useState(true);
   
@@ -28,7 +31,6 @@ export default function Profile({ navigation}) {
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
-
   const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
 
   useEffect(() => {
@@ -55,22 +57,22 @@ export default function Profile({ navigation}) {
       });
   }, []);
 
+  // Logout function
   const handleLogout = async () => {
     try {
-      await logout(); // Call logout
-      console.log("Logged out successfully");
-      // Redirect user or update UI accordingly
-
+      // function from auth context
+      await logout(); 
     } catch (error) {
       setSnackBarVisible(true);
       setSnackbarMessage("Failed to log out", error);
     }
   };
 
+  // Delete account function
   const handleDeleteAccount = (password) => {
     // UserId from context
     const userId = currentUser.uid;
-    
+    // function from auth context
     deleteAccount(password)
     .then(()=>{
       console.log("Account deleted successfully", userId);

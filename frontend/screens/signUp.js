@@ -4,6 +4,7 @@ This is the sign up screen. It is the screen that the user
 sees when they want to create a new account.
 **/
 
+// Import necessary modules
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
@@ -24,6 +25,7 @@ import { Snackbar } from "react-native-paper";
 export default function Login({ navigation }) {
   const { width } = Dimensions.get("window");
 
+  // State for name, email and password
   const [name, onChangeName] = useState("");
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
@@ -33,10 +35,13 @@ export default function Login({ navigation }) {
   const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
   const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
 
+  // Sign up function
   const signUp = () => {
+    // Sign up with email and password from Firebase
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Send post request to backend
+        // this stores the user in the neo4j, firestore and realtime databases
         const user_id = userCredential.user.uid;
         const userData = { name, email, user_id };
         fetch("http://localhost:3000/new-user", {
@@ -49,7 +54,6 @@ export default function Login({ navigation }) {
         })
           .then((response) => {
             response.json();
-            console.log("Signed in");
           })
       })
       .catch((error) => {

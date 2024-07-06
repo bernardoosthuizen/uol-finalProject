@@ -1,3 +1,10 @@
+
+/* 
+-------------------- App.js - Navigation ---------------------
+This file contains the main navigation logic for the app
+**/
+
+// import modules
 import "react-native-gesture-handler";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
@@ -5,6 +12,8 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   Image
 } from "react-native";
+
+// import screens
 import Login from './screens/login';
 import SignUp from './screens/signUp';
 import Home from './screens/home';
@@ -18,11 +27,14 @@ import FriendRequest from './screens/friendRequests';
 import FindFriends from './screens/findFriends';
 import { AuthProvider } from './contextProviders/authContext';
 import { useAuth } from './contextProviders/authContext';
-import LoadingOverlay from './components/loadingOverlay';
 
+// Main navigator component
 const Stack = createStackNavigator();
+// Tab navigator component
 const Tab = createBottomTabNavigator();
 
+// Routes for logged in users
+// This is a nested navigator with a tab navigator
 function LoggedInRoutes() {
   return (
     <Tab.Navigator>
@@ -109,6 +121,9 @@ function LoggedInRoutes() {
   );
 }
 
+// Routes that are protected by authentication
+// This is a nested navigator with a stack navigator
+// These screens are additionally protected to the tab navigator ones
 function ProtectedRoutes() {
   return (
     <Stack.Navigator initialRouteName='LoggedInRoutes'>
@@ -141,6 +156,7 @@ function ProtectedRoutes() {
   );
 }
 
+// Routes for not logged in users
 function PublicRoutes() {
   return (
     <Stack.Navigator>
@@ -158,8 +174,11 @@ function PublicRoutes() {
   );
 }
 
+// Main navigator component
+// This component checks if the user is logged in or not
+// If the user is logged in, it renders the protected routes
+// If the user is not logged in, it renders the public routes
 function MainNavigator() {
-
   const { currentUser, loading } = useAuth();
 
   return (

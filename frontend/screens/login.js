@@ -3,6 +3,8 @@
 This is the login screen. It is the first screen that the user 
 sees when they open the app.
 **/
+
+// Import necessary modules
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View, SafeAreaView, Image, TextInput, Pressable } from "react-native";
 import { Dimensions } from "react-native";
@@ -15,6 +17,7 @@ import { Snackbar } from "react-native-paper";
 export default function Login({ navigation }) {
   const { width } = Dimensions.get("window");
 
+  // State for email and password
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
   const { loading, setLoading } = useAuth();
@@ -22,11 +25,12 @@ export default function Login({ navigation }) {
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
-
   const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
 
+  // Sign in function
   const signIn = () => {
     setLoading(true);
+    // Sign in with email and password from Firebase
     signInWithEmailAndPassword(auth, email, password).catch((error) => {
       navigation.navigate("Login");
       const errorCode = error.code;
