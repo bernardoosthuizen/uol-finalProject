@@ -5,7 +5,7 @@ when they are logged in.
 **/
 
 import { StatusBar } from "expo-status-bar";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     StyleSheet,
     Text,
@@ -21,12 +21,39 @@ import { Snackbar } from "react-native-paper";
 export default function Profile() {
   const { width } = Dimensions.get("window");
   const { logout, deleteAccount, resetPassword, currentUser } = useAuth();
+  const [userData, setUserData] = useState();
+  const [isLoading, setIsLoading] = useState(true);
+  
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
 
   const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
+
+  useEffect(() => {
+    // fetch user data from backend
+    fetch(`http://localhost:3000/user/${currentUser.uid}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
+      },
+    })
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        setUserData(data);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        setSnackBarVisible(true);
+        setSnackbarMessage("Failed to get profile", error.message);
+        navigation.navigate("LoggedInRoutes", { screen: "Home" });
+        console.log(error);
+      });
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -64,13 +91,16 @@ export default function Profile() {
             color: "#4F83A5",
             fontWeight: "bold",
           }}>
-          JOHNDOE
+          {userData ? userData.name : "Loading..."}
         </Text>
       </View>
       <View style={styles.scoreContainer}>
-        <Text style={{ fontSize: width * 0.05 }}>Score</Text>
-        <Text style={{ fontSize: width * 0.3, fontWeight: "bold" }}>93</Text>
-        <Text style={{ fontSize: width * 0.08 }}>3rd Place</Text>
+        <Text style={{ fontSize: width * 0.05 }}>
+          {userData?.score ? "Score" : "No Score"}
+        </Text>
+        <Text style={{ fontSize: width * 0.3, fontWeight: "bold" }}>
+          {userData ? userData.score : null}
+        </Text>
       </View>
       <View style={{ flex: 3 }}>
         <Pressable

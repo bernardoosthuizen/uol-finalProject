@@ -114,7 +114,7 @@ function ProtectedRoutes() {
       <Stack.Screen
         name='Task'
         component={Task}
-        options={{ title: false, headerBackTitle: false }}
+        options={{ title: false, headerBackTitle: false, unmountOnBlur: true }}
       />
       <Stack.Screen
         name='Edit Task'
@@ -160,7 +160,6 @@ function PublicRoutes() {
 function MainNavigator() {
 
   const { currentUser, loading } = useAuth();
-  console.log('MainNavigator: Loading',loading)
 
   return (
     <NavigationContainer>

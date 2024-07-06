@@ -68,7 +68,7 @@ export default function AddTask({navigation}) {
       body: JSON.stringify({
         title: taskTitle,
         priority: taskPriority,
-        due_date: taskDue,
+        due_date: Date.parse(taskDue),
         description: taskDescription,
         details: taskDetails,
         status: "open",

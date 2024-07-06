@@ -25,7 +25,7 @@ export default function EditTask({route, navigation}) {
     const { taskId, taskdata } = route.params;
     const [taskTitle, setTaskTitle] = useState(taskdata.title);
     const [taskPriority, setTaskPriority] = useState(taskdata.priority);
-    const [taskDue, setTaskDue] = useState(taskdata.taskDue);
+    const [taskDue, setTaskDue] = useState(taskdata.due_date);
     const displayDate = (date) => {
       const d = new Date(date);
       return d.toDateString();
@@ -35,6 +35,7 @@ export default function EditTask({route, navigation}) {
     
 
     const newDate = displayDate(taskDue);
+
     const [taskDescription, setTaskDescription] = useState(taskdata.description);
     const [taskDetails, setTaskDetails] = useState(taskdata.details);
 
@@ -55,7 +56,6 @@ export default function EditTask({route, navigation}) {
     };
 
     const { width, height } = Dimensions.get("window");
-    console.log(taskId);
 
     const saveTask = async () => {
         fetch(`http://localhost:3000/task/${currentUser.uid}/${taskId}`, {
@@ -67,7 +67,7 @@ export default function EditTask({route, navigation}) {
           body: JSON.stringify({
             title: taskTitle,
             priority: taskPriority,
-            due_date: taskDue,
+            due_date: Date.parse(taskDue),
             description: taskDescription,
             details: taskDetails,
             status: "open",

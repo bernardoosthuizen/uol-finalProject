@@ -79,7 +79,7 @@ export default function Task({route, navigation}) {
     return d.toDateString();
   };
 
-  const newDate = displayDate(date);
+  
 
   const handleDeleteTask = () => {
     console.log("Deleting task")
@@ -135,7 +135,7 @@ export default function Task({route, navigation}) {
               source={require("../assets/icons/calendar.png")}
               style={{ width: 20, height: 20, marginRight: "5%" }}
             />
-            <Text>{newDate}</Text>
+            <Text>{displayDate(taskdata.due_date)}</Text>
           </View>
           <View style={styles.detailsContainer}>
             <Text>{taskdata.details}</Text>

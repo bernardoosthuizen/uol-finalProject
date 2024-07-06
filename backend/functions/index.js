@@ -173,6 +173,7 @@ app.delete("/user/:userId", apiKeyMiddleware, (req, res) => {
 // Get user by ID
 app.get(
   "/user/:userId",
+  apiKeyMiddleware,
   param("userId")
     .isString()
     .withMessage("Invalid user ID. Must be a string.")
@@ -329,6 +330,7 @@ app.get(
 
     // Get tasks from firestore database by user id
     db.collection(`tasks-${userId}`)
+      .orderBy("due_date")
       .get()
       .then((snapshot) => {
         const tasks = [];
@@ -394,11 +396,6 @@ app.put("/task/:userId/:taskId",apiKeyMiddleware, taskValidator, (req, res) => {
   // Check for validation errors
   const errors = validationResult(req);
 
-  // Return validation errors if any
-  if (!errors.isEmpty()) {
-    return res.status(422).send({ errors: errors.array() });
-  }
-
   
 
   // Update task in firestore database by task id
@@ -406,10 +403,11 @@ app.put("/task/:userId/:taskId",apiKeyMiddleware, taskValidator, (req, res) => {
     .doc(taskId)
     .update(req.body)
     .then(() => {
-      return res.status(200).send({ message: `Task ${task.title} updated.` });
+      return res.status(200).send({ message: `Task ${taskId} updated.` });
     })
     .catch((error) => {
       // Handle error
+      console.log("Error updating task", error)
       const { code, message } = error;
       return res.status(code).send({ error: message });
     });
