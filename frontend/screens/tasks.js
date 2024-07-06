@@ -12,6 +12,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Dimensions } from "react-native";
+import { useIsFocused } from "@react-navigation/native";
 import TaskListComponent from '../components/taskListComponent';
 import { useAuth } from '../contextProviders/authContext';
 import LoadingOverlay from '../components/loadingOverlay';
@@ -23,6 +24,8 @@ export default function Tasks({ navigation }) {
   const [error, setError] = useState(null);
 
   const { currentUser } = useAuth();
+
+  const isVisible = useIsFocused();
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -52,7 +55,7 @@ export default function Tasks({ navigation }) {
     };
 
     fetchTasks();
-  }, []); // Empty dependency array means this effect runs once on mount
+  }, [isVisible]); // Empty dependency array means this effect runs once on mount
 
 
   const { width } = Dimensions.get("window");

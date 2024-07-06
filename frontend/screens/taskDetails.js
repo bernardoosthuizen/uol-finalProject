@@ -5,24 +5,47 @@ when they are logged in.
 **/
 
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useLayoutEffect } from 'react';
 import { StyleSheet, Text, View, SafeAreaView, Dimensions, Pressable, Alert, Image } from "react-native";
 import { useAuth } from '../contextProviders/authContext';
 import LoadingOverlay from "../components/loadingOverlay";
 import { Snackbar } from "react-native-paper";
+import { HeaderBackButton } from "@react-navigation/elements";
 
 export default function Task({route, navigation}) {
   const [taskdata, setTaskData] = useState();
   const [isLoading, setIsLoading] = useState(true);
 
   const { currentUser } = useAuth();
-  const { taskId } = route.params;
+  const { taskId, goBack } = route.params;
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
 
   const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => 
+        ( !goBack ? (
+          <HeaderBackButton
+            onPress={() => {
+              navigation.navigate("LoggedInRoutes", {screen: "Tasks"});
+            }}
+          />
+        ) : (
+          <HeaderBackButton
+            onPress={() => {
+              navigation.goBack();
+            }}
+          />
+          
+        ) // Default back button behavior
+                                    ),
+        
+    });
+  }, [navigation, goBack]);
 
   // Get the task data from the server
   useEffect(() => {
@@ -57,6 +80,31 @@ export default function Task({route, navigation}) {
   };
 
   const newDate = displayDate(date);
+
+  const handleDeleteTask = () => {
+    console.log("Deleting task")
+    fetch(`http://localhost:3000/task/${currentUser.uid}/${taskId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
+      },
+    })
+      .then((response) => {
+        if (response.status === 204) {
+          setSnackBarVisible(true);
+          setSnackbarMessage("Task deleted successfully");
+          // Navigate back
+          navigation.navigate("LoggedInRoutes");
+        } 
+      })
+      .catch((error) => {
+        setSnackBarVisible(true);
+        setSnackbarMessage("Failed to delete task", error.message);
+        navigation.navigate("ProtectedRoutes");
+        console.log(error);
+      });
+  }
 
   const { width, height } = Dimensions.get("window");
   return (
@@ -106,7 +154,7 @@ export default function Task({route, navigation}) {
             <Pressable
               style={{ flex: 1, alignItems: "center", marginTop: "5%" }}
               onPress={() => {
-                navigation.navigate("Edit Task", { taskdata: taskdata });
+                navigation.navigate("Edit Task", { taskdata: taskdata, taskId: taskId});
               }}>
               <Text style={{ color: "black", textDecorationLine: "underline" }}>
                 Edit Task
@@ -123,7 +171,9 @@ export default function Task({route, navigation}) {
                       text: "NO",
                       style: "cancel",
                     },
-                    { text: "YES", onPress: () => console.log("OK Pressed") },
+                    { text: "YES", onPress: () => {
+                      handleDeleteTask();
+                    } },
                   ]
                 );
               }}>

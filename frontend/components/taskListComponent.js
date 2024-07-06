@@ -58,7 +58,7 @@ export default function TaskListComponent({ tasks, header, navigation }) {
               key={item.id}
               style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1.0 }]}
               onPress={() => {
-                navigation.navigate("Task", { taskId: item.id });
+                navigation.navigate("Task", { taskId: item.id, goBack: true });
               }}>
               <DataTable.Row key={item.id} style={styles.row}>
                 <DataTable.Cell style={{ flex: 2 }}>

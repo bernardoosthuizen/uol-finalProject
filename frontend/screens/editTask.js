@@ -19,9 +19,10 @@ import { TextInput } from "react-native-paper";
 import { useState } from 'react';
 import DropDownPicker from "react-native-dropdown-picker";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import {useAuth} from '../contextProviders/authContext';
 
 export default function EditTask({route, navigation}) {
-    const taskdata = route.params?.taskdata;
+    const { taskId, taskdata } = route.params;
     const [taskTitle, setTaskTitle] = useState(taskdata.title);
     const [taskPriority, setTaskPriority] = useState(taskdata.priority);
     const [taskDue, setTaskDue] = useState(taskdata.taskDue);
@@ -30,8 +31,10 @@ export default function EditTask({route, navigation}) {
       return d.toDateString();
     };
 
+    const {currentUser} = useAuth();
+    
+
     const newDate = displayDate(taskDue);
-    const [taskID, setTaskID] = useState(taskdata.id);
     const [taskDescription, setTaskDescription] = useState(taskdata.description);
     const [taskDetails, setTaskDetails] = useState(taskdata.details);
 
@@ -52,9 +55,37 @@ export default function EditTask({route, navigation}) {
     };
 
     const { width, height } = Dimensions.get("window");
-    
+    console.log(taskId);
 
-    console.log(taskID, taskdata.id)
+    const saveTask = async () => {
+        fetch(`http://localhost:3000/task/${currentUser.uid}/${taskId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
+          },
+          body: JSON.stringify({
+            title: taskTitle,
+            priority: taskPriority,
+            due_date: taskDue,
+            description: taskDescription,
+            details: taskDetails,
+            status: "open",
+            user_id: currentUser.uid,
+          }),
+        })
+          .then((response) => {
+            return response.json();
+          })
+          .then((data) => {
+            console.log(data);
+            navigation.navigate("Tasks");
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+    }
+
     return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <SafeAreaView style={styles.container}>
@@ -128,7 +159,7 @@ export default function EditTask({route, navigation}) {
                 styles.button,
               ]}
               onPress={() => {
-                navigation.navigate("Tasks");
+                saveTask();
               }}>
               <Text style={{ color: "white" }}>Save</Text>
             </Pressable>

@@ -83,7 +83,7 @@ export default function AddTask({navigation}) {
           throw new Error(data.errors);
         } 
         // Navigate to task page
-        navigation.navigate("Task", { taskId: data.docId });
+        navigation.navigate("Task", { taskId: data.docId, goBack: false });
       })
       .catch((error) => {
         console.error("Error:", error); 

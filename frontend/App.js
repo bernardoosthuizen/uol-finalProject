@@ -61,6 +61,7 @@ function LoggedInRoutes() {
         component={AddTask}
         initialParams={{taskdata: null}}
         options={{
+          unmountOnBlur: true,
           headerShown: false,
           tabBarLabel: () => null,
           tabBarIcon: ({ size, focused, color }) => {

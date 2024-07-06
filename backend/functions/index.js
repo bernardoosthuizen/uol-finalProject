@@ -366,9 +366,6 @@ app.get(
     .isEmpty()
     .withMessage("Task ID cannot be empty."),
   (req, res) => {
-    console.log("getting");
-
-
     const { userId, taskId } = req.params;
 
     // Get task from firestore database by task id
@@ -392,7 +389,8 @@ app.get(
 // -------------------------------------------------------
 
 // Update task
-app.put("/task/:taskId", taskValidator, (req, res) => {
+app.put("/task/:userId/:taskId",apiKeyMiddleware, taskValidator, (req, res) => {
+  const { taskId, userId } = req.params;
   // Check for validation errors
   const errors = validationResult(req);
 
@@ -401,13 +399,12 @@ app.put("/task/:taskId", taskValidator, (req, res) => {
     return res.status(422).send({ errors: errors.array() });
   }
 
-  const { taskId } = req.params;
-  const {task} = req.body;
+  
 
   // Update task in firestore database by task id
-  db.collection(`tasks-${user_id}`)
+  db.collection(`tasks-${userId}`)
     .doc(taskId)
-    .update(task)
+    .update(req.body)
     .then(() => {
       return res.status(200).send({ message: `Task ${task.title} updated.` });
     })
@@ -422,6 +419,7 @@ app.put("/task/:taskId", taskValidator, (req, res) => {
 // Delete task
 app.delete(
   "/task/:userId/:taskId",
+  apiKeyMiddleware,
   (req, res) => {
     const { userId, taskId } = req.params;
 
