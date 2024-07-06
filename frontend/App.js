@@ -59,7 +59,7 @@ function LoggedInRoutes() {
       <Tab.Screen
         name='Add Task'
         component={AddTask}
-        initialParams={{taskdata: null}}
+        initialParams={{ taskdata: null }}
         options={{
           unmountOnBlur: true,
           headerShown: false,
@@ -78,6 +78,7 @@ function LoggedInRoutes() {
         name='Leaderboard'
         component={Leaderboard}
         options={{
+          unmountOnBlur: true,
           headerShown: false,
           tabBarIcon: ({ size, focused, color }) => {
             return (

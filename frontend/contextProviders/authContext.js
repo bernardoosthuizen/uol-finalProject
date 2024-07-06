@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }) => {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
-              "X-API-Key": process.env.EXPO_PUBLIC_DELETE_API_KEY,
+              "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
             },
           });
         })
@@ -67,9 +67,6 @@ export const AuthProvider = ({ children }) => {
           if (!response.ok) {
             throw new Error("Failed to delete user from backend");
           }
-          console.log(
-            "User successfully deleted from both Firebase and backend"
-          );
         })
         .catch((error) => {
           console.error(

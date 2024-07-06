@@ -8,6 +8,7 @@ const express = require("express");
 const { param, validationResult } = require("express-validator");
 const bodyParser = require("body-parser");
 const { initializeApp } = require("firebase-admin/app");
+const { getDatabase } = require("firebase-admin/database");
 const { userValidator, idValidator, taskValidator, apiKeyMiddleware } = require("./validators");
 const neo4j = require("neo4j-driver");
 const { rateLimit } = require("express-rate-limit");
@@ -25,6 +26,7 @@ const serviceAccount = require("../../uol-fp-firebase-adminsdk-h1olz-34e8ea07cc.
 initializeApp({
   credential: admin.credential.cert(serviceAccount),
   projectId: "uol-fp",
+  databaseURL: "https://uol-fp-default-rtdb.europe-west1.firebasedatabase.app/",
 });
 
 // Initialize Neo4j driver
@@ -36,6 +38,8 @@ const session = driver.session();
 
 // Initialize Firestore database
 const db = admin.firestore();
+const realtimeDb = admin.database();
+
 
 
 // Initialize express server
@@ -94,8 +98,21 @@ app.post("/new-user",apiKeyMiddleware, userValidator, (req, res) => {
             .doc()
             .set({ title: "Sample task" })
             .then(() => {
+              console.log("Sample task added to Firestore realtime database")
               // Send response
-              return res.status(201).send({ user_id: user_id });
+              // create firebase realtime database entry
+
+              
+              
+              const ref = realtimeDb.ref(
+                user_id
+              );
+              ref
+                .set(["obnne"]
+                )
+                .then(() => {
+                  return res.status(201).send({ user_id: user_id });
+                })
             });
         });
     })
@@ -155,11 +172,16 @@ app.delete("/user/:userId", apiKeyMiddleware, (req, res) => {
               snapshot.forEach((doc) => {
                 doc.ref.delete();
               });
+            })
+            .then(() => {
+              // Delete from realtime database
+              const ref = realtimeDb.ref(userId);
+              return ref.remove();
+            })
+            .then(() => {
+              return res.status(204).send({ message: "User deleted" });
             });
-        })
-        .then(() => {
-          return res.status(204).send({ message: "User deleted" });
-        });
+        }) 
     })
     .catch((error) => {
       // Handle error
@@ -205,6 +227,7 @@ app.get(
 
 // Get friends of a user
 app.get("/friends/:userId",
+  apiKeyMiddleware,
   param("userId")
     .isString()
     .withMessage("Invalid user ID. Must be a string.")
@@ -216,17 +239,39 @@ app.get("/friends/:userId",
   // Get friends from Neo4j database
   session
     .run(
-      "MATCH (u:User {user_id: $userId})-[:FRIEND]->(f:User) RETURN f",
+      `MATCH (u:User {user_id: $userId})
+     RETURN u AS user
+     UNION ALL
+     MATCH (u:User {user_id: $userId})-[:FRIEND]->(f:User)
+     RETURN f AS user`,
       { userId }
     )
     .then((result) => {
-      const friends = result.records.map((record) => record.get("f").properties);
+      const friends = result.records.map(
+        (record) => record.get("user").properties
+      );
       return res.status(200).send(friends);
     })
     .catch((error) => {
       // Handle error
       const { code, message } = error;
       return res.status(code).send({ error: message });
+    });
+});
+// -------------------------------------------------------
+
+// Send friend request
+app.post("/send-friend-request", (req, res) => {
+  const {userId, friendId} = req.body;
+
+  // Modify Neo4j database
+  session
+    .run(
+      "MATCH (u:User {user_id: $userId}), (f:User {user_id: $friendId}) CREATE (u)-[:REQUEST]->(f)",
+      { userId, friendId }
+    )
+    .then(() => {
+      return res.status(201).send({ message: "Friend request sent" });
     });
 });
 // -------------------------------------------------------
@@ -248,7 +293,7 @@ app.post("/add-friend", (req, res) => {
 // -------------------------------------------------------
 
 // Search for a user
-app.post("/search-friend/:userName", (req, res) => {
+app.get("/search-friend/:userName", apiKeyMiddleware, (req, res) => {
   const {userName} = req.params;
 
   // Search for user in Neo4j database
@@ -256,12 +301,15 @@ app.post("/search-friend/:userName", (req, res) => {
     .run("MATCH (u:User) WHERE u.name CONTAINS $userName RETURN u", { userName })
     .then((result) => {
       const users = result.records.map((record) => record.get("u").properties);
+      if (users.length === 0) {
+        return res.status(404).send({ message: "No users found" });
+      }
       return res.status(200).send(users);
     })
     .catch((error) => {
       // Handle error
       const { code, message } = error;
-      return res.status(code).send({ error: message });
+      return res.status(500).send({ error: message });
     });
 });
 // -------------------------------------------------------

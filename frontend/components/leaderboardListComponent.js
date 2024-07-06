@@ -13,12 +13,18 @@ import { DataTable } from "react-native-paper";
 export default function LeaderboardListComponent({ users }) {
     const { width } = Dimensions.get("window");
 
+    // Order users by score
+    users.sort((a, b) => b.score - a.score);
+    // Add rank to each user
+    users.forEach((user, index) => {
+      user.rank = index + 1;
+    });
 
     return (
       <DataTable>
         <ScrollView>
           {users.map((item) => (
-            <DataTable.Row key={item.rank} style={styles.row}>
+            <DataTable.Row key={item.user_id} style={styles.row}>
               <DataTable.Cell style={{ flex: 1 }}>
                 <Text style={{ fontSize: width * 0.05 }}>{item.rank}</Text>
               </DataTable.Cell>

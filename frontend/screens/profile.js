@@ -18,7 +18,7 @@ import { useAuth } from '../contextProviders/authContext';
 import { Snackbar } from "react-native-paper";
 
 
-export default function Profile() {
+export default function Profile({ navigation}) {
   const { width } = Dimensions.get("window");
   const { logout, deleteAccount, resetPassword, currentUser } = useAuth();
   const [userData, setUserData] = useState();
@@ -67,7 +67,7 @@ export default function Profile() {
     }
   };
 
-  const handleDeleteAccount = async (password) => {
+  const handleDeleteAccount = (password) => {
     // UserId from context
     const userId = currentUser.uid;
     
@@ -109,7 +109,7 @@ export default function Profile() {
             styles.button,
           ]}
           onPress={() => {
-            alert("press");
+            navigation.navigate("Find Friends");
           }}>
           <Text style={{ color: "black" }}>Find Friends</Text>
         </Pressable>

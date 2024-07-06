@@ -17,26 +17,54 @@ import {
 import { Dimensions  } from "react-native";
 import { DataTable } from "react-native-paper";
 import { Searchbar } from "react-native-paper";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Snackbar } from "react-native-paper";
 
 
-export default function FindFriends() {
+export default function FindFriends({ navigation }) {
   const { width } = Dimensions.get("window");
   const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [friends, setFriends] = useState([]);
 
-  const friends = [
-    {
-      id: 1,
-      name: "John Doe",
-      score: 100,
-    },
-    {
-      id: 2,
-      name: "Jane Doe",
-      score: 200,
+  // Snack bar state
+  const [snackBarVisible, setSnackBarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
+
+  const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
+
+  useEffect(() => {
+    if (searchQuery == "") {
+      return;
     }
-  ];
+    // fetch user data from backend
+    fetch(`http://localhost:3000/search-friend/${searchQuery}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
+      },
+    })
+      .then((response) => {
+        if (response.status == 404) {
+          setFriends([]);
+          return;
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setFriends(data);
+
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        setSnackBarVisible(true);
+        setSnackbarMessage("An error occurred.", error.message);
+        navigation.navigate("LoggedInRoutes", { screen: "Home" });
+        console.log(error);
+      });
+  }, [searchQuery]);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.titleContainer}>
@@ -51,27 +79,33 @@ export default function FindFriends() {
       </View>
       <Searchbar
         placeholder='Search'
-        onChangeText={(text)=>{
-            if (text != "") {
-              setLoading(true);
-            } else {
-              setLoading(false);
-            }
-            setSearchQuery(text)
+        onChangeText={(text) => {
+          if (text != "") {
+            setIsLoading(true);
+          } else {
+            setIsLoading(false);
           }
-        }
+          setSearchQuery(text);
+        }}
         value={searchQuery}
         mode='view'
-        loading={loading}
-        style={{ width: width * 0.8,marginBottom: "5%", backgroundColor: "#F2F2F2"}}
+        loading={isLoading}
+        style={{
+          width: width * 0.8,
+          marginBottom: "5%",
+          backgroundColor: "#F2F2F2",
+        }}
         rippleColor={"#4F83A5"}
         showDivider={false}
       />
+      <Text style={{ fontSize: width * 0.05, color: "#4F83A5" }}>
+        {!friends ? "No friends found" : null}
+      </Text>
       <View style={styles.tableContainer}>
         <DataTable>
           <ScrollView>
-            {friends.map((item) => (
-              <DataTable.Row key={item.id} style={styles.row}>
+            {friends?.map((item) => (
+              <DataTable.Row key={item.user_id} style={styles.row}>
                 <DataTable.Cell style={{ flex: 2 }}>
                   <Text style={{ fontSize: width * 0.04 }}>{item.name}</Text>
                 </DataTable.Cell>
@@ -100,6 +134,20 @@ export default function FindFriends() {
           </ScrollView>
         </DataTable>
       </View>
+      {/* Snackbars - display errors to user */}
+      <Snackbar
+        visible={snackBarVisible}
+        onDismiss={onDismissSnackBar}
+        rippleColor={"#4F83A5"}
+        action={{
+          label: "Dismiss",
+          textColor: "#4F83A5",
+          onPress: () => {
+            // Do something
+          },
+        }}>
+        <Text style={{ color: "white" }}>{snackbarMessage}</Text>
+      </Snackbar>
       <StatusBar style='auto' />
     </SafeAreaView>
   );

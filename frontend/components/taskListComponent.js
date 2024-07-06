@@ -28,9 +28,7 @@ export default function TaskListComponent({ tasks, header, navigation }) {
   }, [tasks, sortDateDirection]); // Re-run this effect if tasks or sortPriorityDirection changes
 
   setDateText = (date) => {
-    console.log(date, );
     let newDate = new Date(date).toDateString();
-    console.log(newDate);
     let today = new Date().toDateString();
     if (today == newDate) {
       return "Today";
