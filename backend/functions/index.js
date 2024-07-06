@@ -261,18 +261,51 @@ app.get("/friends/:userId",
 // -------------------------------------------------------
 
 // Send friend request
-app.post("/send-friend-request", (req, res) => {
+app.post("/send-friend-request", apiKeyMiddleware, (req, res) => {
   const {userId, friendId} = req.body;
 
-  // Modify Neo4j database
-  session
-    .run(
-      "MATCH (u:User {user_id: $userId}), (f:User {user_id: $friendId}) CREATE (u)-[:REQUEST]->(f)",
-      { userId, friendId }
-    )
-    .then(() => {
-      return res.status(201).send({ message: "Friend request sent" });
-    });
+  // add friend request to firebase realtime database
+  const ref = realtimeDb.ref(
+    friendId
+  );
+  ref.once(
+    "value",
+    (snapshot) => {
+      const requests = snapshot.val() || []; // Use existing list, or initialize an empty array if null
+      if (!requests.includes(userId)) {
+        // Check if userId is not already in the list to avoid duplicates
+        requests.push(userId); // Add the new userId to the list
+        // Update the reference with the new list
+        ref
+          .set(requests)
+          .then(() => res.status(201).send({ message: "Friend request sent" }))
+          .catch((error) =>
+            res
+              .status(500)
+              .send({
+                message: "Error sending friend request",
+                error: error.message,
+              })
+          );
+      } else {
+        // Handle case where the friend request already exists
+        res.status(409).send({ message: "Friend request already sent" });
+      }
+    },
+    (error) => {
+      res
+        .status(500)
+        .send({
+          message: "Error retrieving friend requests",
+          error: error.message,
+        });
+    }
+  );
+  // ref
+  //   .set([userId])
+  //   .then(() => {
+  //     return res.status(201).send({ message: "Friend request sent" });
+  //   });
 });
 // -------------------------------------------------------
 

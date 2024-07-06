@@ -19,6 +19,7 @@ import { DataTable } from "react-native-paper";
 import { Searchbar } from "react-native-paper";
 import { useState, useEffect } from 'react';
 import { Snackbar } from "react-native-paper";
+import { useAuth } from '../contextProviders/authContext';
 
 
 export default function FindFriends({ navigation }) {
@@ -26,6 +27,8 @@ export default function FindFriends({ navigation }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [friends, setFriends] = useState([]);
+
+  const { currentUser } = useAuth();
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
@@ -64,6 +67,38 @@ export default function FindFriends({ navigation }) {
         console.log(error);
       });
   }, [searchQuery]);
+
+  handleSendRequest = (friendId) => {
+    // send friend request
+    fetch(`http://localhost:3000/send-friend-request/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
+      },
+      body: JSON.stringify({
+        userId: currentUser.uid,
+        friendId: friendId,
+      }),
+    })
+      .then((response) => {
+        if (response.status == 404) {
+          setSnackBarVisible(true);
+          setSnackbarMessage("An error occurred.");
+          return;
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setSnackBarVisible(true);
+        setSnackbarMessage("Request sent!");
+      })
+      .catch((error) => {
+        setSnackBarVisible(true);
+        setSnackbarMessage("An error occurred.", error.message);
+        console.log(error);
+      });
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -104,7 +139,7 @@ export default function FindFriends({ navigation }) {
       <View style={styles.tableContainer}>
         <DataTable>
           <ScrollView>
-            {friends?.map((item) => (
+            {friends.map((item) => (
               <DataTable.Row key={item.user_id} style={styles.row}>
                 <DataTable.Cell style={{ flex: 2 }}>
                   <Text style={{ fontSize: width * 0.04 }}>{item.name}</Text>
@@ -121,7 +156,7 @@ export default function FindFriends({ navigation }) {
                       styles.button,
                     ]}
                     onPress={() => {
-                      console.log("Added");
+                      handleSendRequest(item.user_id);
                     }}>
                     <Image
                       style={{ width: 30, height: 30 }}
