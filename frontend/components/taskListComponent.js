@@ -27,6 +27,49 @@ export default function TaskListComponent({ tasks, header, navigation }) {
     // Add any other sorting logic here
   }, [tasks, sortDateDirection]); // Re-run this effect if tasks or sortPriorityDirection changes
 
+  setDateText = (date) => {
+    console.log(date, );
+    let newDate = new Date(date).toDateString();
+    console.log(newDate);
+    let today = new Date().toDateString();
+    if (today == newDate) {
+      return "Today";
+    }
+    if (date < Date.parse(today)) {
+      return "Overdue";
+    }
+    if (date == Date.parse(today) + 86400000) {
+      return "Tomorrow";
+    }
+    // if its within 7 days
+    if (date < Date.parse(today) + 604800000) {
+      return newDate.split(" ").slice(0, 1).join(" ");
+    }
+    // if its next year return month and year
+    if (new Date().getFullYear() < new Date(date).getFullYear()) {
+      const months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
+      let formattedDate = `${months[new Date(date).getMonth()]} ${new Date(
+        date
+      ).getFullYear()}`;
+      return formattedDate;
+    }
+    return newDate.split(" ").slice(1, 3).join(" ");
+
+  };
+
   return (
     <DataTable>
       {header ? (
@@ -113,7 +156,9 @@ export default function TaskListComponent({ tasks, header, navigation }) {
                     }}
                     alt='Calendar icon'
                   />
-                  <Text style={{ fontSize: width * 0.04 }}>Today</Text>
+                  <Text style={{ fontSize: width * 0.04 }}>
+                    {setDateText(item.due_date)}
+                  </Text>
                 </View>
               </DataTable.Cell>
             </DataTable.Row>

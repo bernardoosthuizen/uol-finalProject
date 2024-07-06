@@ -66,7 +66,7 @@ export default function Home({ navigation }) {
       <View style={styles.tasksContainer}>
         <Text style={styles.titleText}>My Tasks</Text>
         <View>
-          <TaskListComponent tasks={taskdata} navigation={navigation}/>
+          {/* <TaskListComponent tasks={taskdata} navigation={navigation}/> */}
         </View>
       </View>
       <StatusBar style='auto' />
