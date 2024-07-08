@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 import TaskListComponent from '../components/taskListComponent';
 import LeaderboardListComponent from '../components/leaderboardListComponent';
 import LoadingOverlay from "../components/loadingOverlay";
+import { useConnectivity } from '../contextProviders/connectivityContext';
 
 import { useAuth } from '../contextProviders/authContext';
 
@@ -41,6 +42,13 @@ export default function Home({ navigation }) {
   const [dashData, setDashData] = useState({});
 
   const [isLoading, setLoading] = useState(false);
+
+  const { isConnected } = useConnectivity();
+
+  if (!isConnected) {
+    setSnackBarVisible(true);
+    setSnackbarMessage("No internet connection.");
+  }
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);

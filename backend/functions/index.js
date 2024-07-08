@@ -20,6 +20,7 @@ require("dotenv").config();
 // -------------------------------------------------------
 const admin = require("firebase-admin");
 const serviceAccount = require("../../uol-fp-firebase-adminsdk-h1olz-34e8ea07cc.json");
+const { create } = require('ts-node');
 // -------------------------------------------------------
 
 // Initialize Firebase Admin
@@ -138,7 +139,6 @@ app.post("/new-user",apiKeyMiddleware, userValidator, (req, res) => {
     .doc(user_id)
     .set(userData)
     .then(() => {
-      console.log("User added to Firestore database");
       // Add user to Neo4j database
       session
         .run("CREATE (u:User {user_id: $user_id, name: $name, score: $score}) RETURN u", {
@@ -153,7 +153,6 @@ app.post("/new-user",apiKeyMiddleware, userValidator, (req, res) => {
             .doc()
             .set({ title: "Sample task" })
             .then(() => {
-              console.log("Sample task added to Firestore realtime database")
               // Send response
               // create firebase realtime database entry
 
@@ -444,7 +443,6 @@ app.get("/search-friend/:userName", apiKeyMiddleware, (req, res) => {
 // Reject friend request
 app.delete("/reject-friend-request/:userId/:friendId", apiKeyMiddleware, (req, res) => {
   const {userId, friendId} = req.params;
-  console.log("Reject friend request", userId, friendId);
   // Remove friend request from firebase realtime database
   const ref = realtimeDb.ref(userId);
   ref.once(
@@ -471,7 +469,6 @@ app.delete("/reject-friend-request/:userId/:friendId", apiKeyMiddleware, (req, r
 
 // Add a new task
 app.post("/new-task", apiKeyMiddleware, taskValidator, (req, res) => {
-  console.log("New task request received");
   // Check for validation errors
   const errors = validationResult(req);
 
@@ -499,6 +496,7 @@ app.post("/new-task", apiKeyMiddleware, taskValidator, (req, res) => {
     due_date,
     priority,
     user_id,
+    created_at: new Date().getTime(),
   };
 
   // Generate a new document reference with an auto-generated ID

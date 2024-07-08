@@ -93,6 +93,7 @@ export default function AddTask({navigation}) {
   };
 
   const { width, height } = Dimensions.get("window");
+  
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView style={styles.container}>
@@ -157,6 +158,7 @@ export default function AddTask({navigation}) {
             setValue={setTaskPriority}
             setItems={setPriorities}
             autoScroll={true}
+            placeholder='Select Priority'
             style={styles.priorityList}
             dropDownContainerStyle={styles.dropdownMenu}
           />

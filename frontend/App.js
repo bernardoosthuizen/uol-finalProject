@@ -30,6 +30,8 @@ import { AuthProvider } from './contextProviders/authContext';
 import { useAuth } from './contextProviders/authContext';
 import { realtimeDb } from './services/firebaseConfig';
 import { ref, onValue } from 'firebase/database';
+import { addEventListener } from "@react-native-community/netinfo";
+import { ConnectivityContext } from "./contextProviders/connectivityContext";
 
 // Main navigator component
 const Stack = createStackNavigator();
@@ -65,12 +67,15 @@ function LoggedInRoutes() {
   }, []);
 
 
+
+
   return (
     <Tab.Navigator>
       <Tab.Screen
         name='Home'
         component={Home}
         options={{
+          tabBarShowLabel: false,
           unmountOnBlur: true,
           headerShown: false,
           tabBarIcon: ({ size, focused, color }) => {
@@ -87,6 +92,7 @@ function LoggedInRoutes() {
         name='Tasks'
         component={Tasks}
         options={{
+          tabBarShowLabel: false,
           headerShown: false,
           tabBarIcon: ({ size, focused, color }) => {
             return (
@@ -103,6 +109,7 @@ function LoggedInRoutes() {
         component={AddTask}
         initialParams={{ taskdata: null }}
         options={{
+          tabBarShowLabel: false,
           unmountOnBlur: true,
           headerShown: false,
           tabBarLabel: () => null,
@@ -120,6 +127,7 @@ function LoggedInRoutes() {
         name='Leaderboard'
         component={Leaderboard}
         options={{
+          tabBarShowLabel: false,
           unmountOnBlur: true,
           headerShown: false,
           tabBarIcon: ({ size, focused, color }) => {
@@ -135,6 +143,7 @@ function LoggedInRoutes() {
       <Tab.Screen
         name='Profile'
         options={{
+          tabBarShowLabel: false,
           headerShown: false,
           tabBarBadge: friendRequests.length > 0 ? friendRequests.length : null,
           tabBarIcon: ({ size, focused, color }) => {
@@ -211,25 +220,38 @@ function PublicRoutes() {
 // If the user is not logged in, it renders the public routes
 function MainNavigator() {
   const { currentUser, loading } = useAuth();
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    const handleConnectivityChange = (state) => {
+      setIsConnected(state.isConnected);
+    };
+
+    const unsubscribe = addEventListener(handleConnectivityChange);
+
+    return () => unsubscribe();
+  }, []);
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        {currentUser ? (
-          <Stack.Screen
-            name='ProtectedRoutes'
-            component={ProtectedRoutes}
-            options={{ headerShown: false }}
-          />
-        ) : (
-          <Stack.Screen
-            name='PublicRoutes'
-            component={PublicRoutes}
-            options={{ headerShown: false }}
-          />
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+    <ConnectivityContext.Provider value={{ isConnected }}>
+      <NavigationContainer>
+        <Stack.Navigator>
+          {currentUser ? (
+            <Stack.Screen
+              name='ProtectedRoutes'
+              component={ProtectedRoutes}
+              options={{ headerShown: false }}
+            />
+          ) : (
+            <Stack.Screen
+              name='PublicRoutes'
+              component={PublicRoutes}
+              options={{ headerShown: false }}
+            />
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </ConnectivityContext.Provider>
   );
 }
 

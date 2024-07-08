@@ -68,6 +68,14 @@ export default function TaskListComponent({ tasks, header, navigation }) {
 
   };
 
+  function truncateTitle(title, maxLength) {
+    if (title.length > maxLength) {
+      return title.substring(0, maxLength - 3) + "...";
+    } else {
+      return title;
+    }
+  }
+
   if (tasks?.length == 0) {
     return (
       <View style={styles.messageContainer}>
@@ -149,7 +157,9 @@ export default function TaskListComponent({ tasks, header, navigation }) {
                 )}
               </DataTable.Cell>
               <DataTable.Cell style={{ flex: 3 }}>
-                <Text style={{ fontSize: width * 0.04 }}>{item.title}</Text>
+                <Text style={{ fontSize: width * 0.04 }}>
+                  {truncateTitle(item.title, 35)}
+                </Text>
               </DataTable.Cell>
               <DataTable.Cell numeric style={{ flex: 3, flexDirection: "row" }}>
                 <View style={{ flex: 1, flexDirection: "row" }}>

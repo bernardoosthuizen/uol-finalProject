@@ -13,14 +13,24 @@ import {auth} from '../services/firebaseConfig';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { Snackbar } from "react-native-paper";
 import LoadingOverlay from '../components/loadingOverlay';
+import { useConnectivity } from "../contextProviders/connectivityContext";
 
 export default function Login({ navigation }) {
   const { width } = Dimensions.get("window");
+
+  const { isConnected } = useConnectivity();
+
+  if (!isConnected) {
+    setSnackBarVisible(true);
+    setSnackbarMessage("No internet connection.");
+  }
 
   // State for email and password
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
   const [isLoading, setLoading] = useState(false);
+
+  
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
