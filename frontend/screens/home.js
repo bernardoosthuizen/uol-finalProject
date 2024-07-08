@@ -60,7 +60,7 @@ export default function Home({ navigation }) {
         <Text style={styles.titleText}>Leader-board</Text>
         <View>
           <DataTable>
-            <LeaderboardListComponent users={leaderdata}/>
+            {/* <LeaderboardListComponent users={leaderdata}/> */}
           </DataTable>
         </View>
       </View>

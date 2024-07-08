@@ -12,6 +12,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   Image
 } from "react-native";
+import { useEffect, useState } from 'react';
 
 // import screens
 import Login from './screens/login';
@@ -27,6 +28,8 @@ import FriendRequest from './screens/friendRequests';
 import FindFriends from './screens/findFriends';
 import { AuthProvider } from './contextProviders/authContext';
 import { useAuth } from './contextProviders/authContext';
+import { realtimeDb } from './services/firebaseConfig';
+import { ref, onValue } from 'firebase/database';
 
 // Main navigator component
 const Stack = createStackNavigator();
@@ -36,6 +39,28 @@ const Tab = createBottomTabNavigator();
 // Routes for logged in users
 // This is a nested navigator with a tab navigator
 function LoggedInRoutes() {
+  const [friendRequests, setFriendRequests] = useState([]);
+  const { currentUser } = useAuth();
+
+  useEffect(() => {
+    console.log(currentUser.uid);
+    // Specify the path to data in realtime database
+    const requests = ref(realtimeDb, currentUser.uid);
+
+     const unsubscribe = onValue(
+       requests,
+       (snapshot) => {
+         const data = snapshot.val();
+         setFriendRequests(data ? data : []);
+       },
+       (error) => {
+         console.error(error);
+       }
+     );
+    
+  }, []);
+
+
   return (
     <Tab.Navigator>
       <Tab.Screen
@@ -107,6 +132,7 @@ function LoggedInRoutes() {
         component={Profile}
         options={{
           headerShown: false,
+          tabBarBadge: friendRequests.length > 0 ? friendRequests.length : null,
           tabBarIcon: ({ size, focused, color }) => {
             return (
               <Image

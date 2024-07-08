@@ -7,6 +7,7 @@ This file is used to initialize the Firebase app and export the Firestore and Au
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getReactNativePersistence, initializeAuth } from "firebase/auth";
+import { getDatabase } from "firebase/database";
 import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
 
 // The configuration for Firebase
@@ -17,15 +18,18 @@ const firebaseConfig = {
   storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  databaseURL: "https://uol-fp-default-rtdb.europe-west1.firebasedatabase.app/",
 };
 
 // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
 // Initialize Firestore
 const db = getFirestore(firebaseApp);
+// Initialise real-time database
+const realtimeDb = getDatabase(firebaseApp);
 // Initialize Auth
 const auth = initializeAuth(firebaseApp, {
   persistence: getReactNativePersistence(ReactNativeAsyncStorage),
 });
 
-module.exports = { db, auth, firebaseApp };
+module.exports = { db, auth, firebaseApp, realtimeDb };
