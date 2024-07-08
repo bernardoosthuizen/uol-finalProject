@@ -19,10 +19,10 @@ export default function TaskListComponent({ tasks, header, navigation }) {
 
   useEffect(() => {
     if (sortDateDirection === "descending") {
-      tasks = tasks.reverse(); // Sort the copy
+      tasks = tasks?.reverse(); // Sort the copy
     }
     if (sortDateDirection === "ascending") {
-      tasks = tasks.reverse(); // Sort the copy
+      tasks = tasks?.reverse(); // Sort the copy
     }
     // Add any other sorting logic here
   }, [tasks, sortDateDirection]); // Re-run this effect if tasks or sortPriorityDirection changes
@@ -68,6 +68,14 @@ export default function TaskListComponent({ tasks, header, navigation }) {
 
   };
 
+  if (tasks?.length == 0) {
+    return (
+      <View style={styles.messageContainer}>
+        <Text style={{ color: "grey" }}>No tasks yet :(</Text>
+      </View>
+    );
+  }
+
   return (
     <DataTable>
       {header ? (
@@ -102,7 +110,7 @@ export default function TaskListComponent({ tasks, header, navigation }) {
         </DataTable.Header>
       ) : null}
       <ScrollView>
-        {tasks.map((item) => (
+        {tasks?.map((item) => (
           <Pressable
             key={item.id}
             style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1.0 }]}
@@ -172,6 +180,12 @@ const styles = StyleSheet.create({
     color: "#4F83A5",
     fontSize: "20%",
     marginVertical: "5%",
+  },
+  messageContainer: {
+    width: "100%",
+    height: "80%",
+    alignItems: "center",
+    justifyContent: "center",
   },
   row: {
     width: "100%",

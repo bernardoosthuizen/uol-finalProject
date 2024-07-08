@@ -11,10 +11,12 @@ import { useEffect, useState } from "react";
 import LeaderboardListComponent from '../components/leaderboardListComponent';
 import { useAuth } from "../contextProviders/authContext";
 import { Snackbar } from "react-native-paper";
+import LoadingOverlay from "../components/loadingOverlay";
 
 export default function Leaderboard({ navigation }) {
   const [isLoading, setIsLoading] = useState(true);
   const [friends, setFriends] = useState([]);
+
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
@@ -87,7 +89,8 @@ export default function Leaderboard({ navigation }) {
           onPress: () => {
             // Do something
           },
-        }}></Snackbar>
+        }}/>
+      <LoadingOverlay visible={isLoading} />
       <StatusBar style='auto' />
     </SafeAreaView>
   );

@@ -62,7 +62,7 @@ export default function Tasks({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       {isLoading ? (
-        <LoadingOverlay/>
+        <LoadingOverlay />
       ) : (
         <View>
           <View style={styles.titleContainer}>
@@ -83,9 +83,8 @@ export default function Tasks({ navigation }) {
             />
           </View>
         </View>
-        
       )}
-      
+      <LoadingOverlay visible={isLoading} />
       <StatusBar style='auto' />
     </SafeAreaView>
   );

@@ -74,15 +74,20 @@ app.get("/dashboard/:userId", apiKeyMiddleware, (req, res) => {
     .get()
     .then((doc) => {
       if (!doc.exists) {
-        return res.status(404).send({ message: "User not found" });
+        return res.status(404).json({ message: "User not found" });
       }
       const userData = doc.data();
       // Get tasks from firestore
       db.collection(`tasks-${userId}`)
+        .orderBy("due_date")
+        .limit(5)
         .get()
         .then((snapshot) => {
           const tasks = [];
           snapshot.forEach((doc) => {
+            if (doc.title == "Sample task") {
+              return;
+            }
             tasks.push({
               id: doc.id,
               ...doc.data(),
@@ -91,22 +96,26 @@ app.get("/dashboard/:userId", apiKeyMiddleware, (req, res) => {
           // Get friends from Neo4j
           session
             .run(
-              `MATCH (u:User {user_id: $userId})-[:FRIEND]->(f:User)
-             RETURN f`,
+              `MATCH (u:User {user_id: $userId})
+                RETURN u AS user
+                UNION ALL
+                MATCH (u:User {user_id: $userId})-[:friend]->(f:User)
+                RETURN f AS user`,
+
               { userId }
             )
             .then((result) => {
               const friends = result.records.map(
-                (record) => record.get("f").properties
+                (record) => record.get("user").properties
               );
-              return res.status(200).send({ user: userData, tasks, friends });
+              return res.status(200).json({ user: userData, tasks, friends });
             });
         });
     })
     .catch((error) => {
       // Handle error
       const { code, message } = error;
-      return res.status(code).send({ error: message });
+      return res.status(code).json({ error: message });
     });
 });
 
@@ -288,7 +297,7 @@ app.get("/friends/:userId",
       `MATCH (u:User {user_id: $userId})
      RETURN u AS user
      UNION ALL
-     MATCH (u:User {user_id: $userId})-[:FRIEND]->(f:User)
+     MATCH (u:User {user_id: $userId})-[:friend]->(f:User)
      RETURN f AS user`,
       { userId }
     )

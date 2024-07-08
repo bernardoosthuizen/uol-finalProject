@@ -10,9 +10,9 @@ import { StyleSheet, Text, View, SafeAreaView, Image, TextInput, Pressable } fro
 import { Dimensions } from "react-native";
 import { useState } from 'react';
 import {auth} from '../services/firebaseConfig';
-import { useAuth } from '../contextProviders/authContext';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { Snackbar } from "react-native-paper";
+import LoadingOverlay from '../components/loadingOverlay';
 
 export default function Login({ navigation }) {
   const { width } = Dimensions.get("window");
@@ -20,7 +20,7 @@ export default function Login({ navigation }) {
   // State for email and password
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
-  const { loading, setLoading } = useAuth();
+  const [isLoading, setLoading] = useState(false);
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
@@ -32,6 +32,7 @@ export default function Login({ navigation }) {
     setLoading(true);
     // Sign in with email and password from Firebase
     signInWithEmailAndPassword(auth, email, password).catch((error) => {
+      setLoading(false);
       navigation.navigate("Login");
       const errorCode = error.code;
       const errorMessage = error.message;
@@ -106,6 +107,7 @@ export default function Login({ navigation }) {
         }}>
         <Text style={{ color: "white" }}>{snackbarMessage}</Text>
       </Snackbar>
+      < LoadingOverlay visible={isLoading} />
       <StatusBar style='auto' />
     </SafeAreaView>
   );

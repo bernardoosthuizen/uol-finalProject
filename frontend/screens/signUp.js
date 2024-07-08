@@ -20,6 +20,7 @@ import { useState } from "react";
 import {auth} from '../services/firebaseConfig';
 import { createUserWithEmailAndPassword} from 'firebase/auth';
 import { Snackbar } from "react-native-paper";
+import LoadingOverlay from "../components/loadingOverlay";
 
 
 export default function Login({ navigation }) {
@@ -30,6 +31,8 @@ export default function Login({ navigation }) {
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
 
+  const [isLoading, setLoading] = useState(false);
+
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
@@ -37,6 +40,7 @@ export default function Login({ navigation }) {
 
   // Sign up function
   const signUp = () => {
+    setLoading(true);
     // Sign up with email and password from Firebase
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
@@ -132,6 +136,7 @@ export default function Login({ navigation }) {
         }}>
         <Text style={{ color: "white" }}>{snackbarMessage}</Text>
       </Snackbar>
+      <LoadingOverlay visible={isLoading} />
       <StatusBar style='auto' />
     </SafeAreaView>
   );

@@ -68,6 +68,7 @@ export default function Profile({ friendRequests }) {
     } catch (error) {
       setSnackBarVisible(true);
       setSnackbarMessage("Failed to log out", error);
+     
     }
   };
 

@@ -144,7 +144,7 @@ export default function FindFriends({ navigation }) {
       <View style={styles.tableContainer}>
         <DataTable>
           <ScrollView>
-            {friends.map((item) => (
+            {friends?.map((item) => (
               <DataTable.Row key={item.user_id} style={styles.row}>
                 <DataTable.Cell style={{ flex: 2 }}>
                   <Text style={{ fontSize: width * 0.04 }}>{item.name}</Text>

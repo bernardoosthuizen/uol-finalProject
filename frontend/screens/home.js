@@ -15,10 +15,13 @@ import {
 } from "react-native";
 import { Dimensions } from "react-native";
 import { DataTable } from "react-native-paper";
+import { Snackbar } from "react-native-paper";
+import { useEffect, useState } from "react";
 // import custom components
 import TaskListComponent from '../components/taskListComponent';
 import LeaderboardListComponent from '../components/leaderboardListComponent';
-import { useEffect } from 'react';
+import LoadingOverlay from "../components/loadingOverlay";
+
 import { useAuth } from '../contextProviders/authContext';
 
 
@@ -34,11 +37,20 @@ export function LeaderItem ({ item }) {
 
 export default function Home({ navigation }) {
   const { width } = Dimensions.get("window");
-  const {currentUser} = useAuth();
+  const { currentUser } = useAuth();
+  const [dashData, setDashData] = useState({});
+
+  const [isLoading, setLoading] = useState(false);
+
+  // Snack bar state
+  const [snackBarVisible, setSnackBarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
+  const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
 
   // get dashboard data
   useEffect(() => {
-    fetch(`http://localhost:3000/dashboard${currentUser.uid}`, {
+    setLoading(true);
+    fetch(`http://localhost:3000/dashboard/${currentUser.uid}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -49,20 +61,15 @@ export default function Home({ navigation }) {
         return response.json();
       })
       .then((data) => {
-        console.log(data);
+        setDashData(data);
+        setLoading(false);
       })
       .catch((error) => {
+        setSnackBarVisible(true);
+        setSnackbarMessage("Failed to get dashboard.", error.message);
         console.error("Failed to get dashboard data", error.message);
       });
   }, []);
-
-    const taskdata = [
-      { title: "Devin", prority: "high", due: 50, id: 123 },
-      { title: "Dan", prority: "medium", due: 50, id: 35 },
-      { title: "Dominic", prority: "high", due: 50, id: 365 },
-      { title: "Jackson", prority: "medium", due: 50, id: 4783 },
-      { title: "James", prority: 'low', due: 50, id: 487 },
-    ];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -75,16 +82,31 @@ export default function Home({ navigation }) {
         <Text style={styles.titleText}>Leader-board</Text>
         <View>
           <DataTable>
-            {/* <LeaderboardListComponent users={leaderdata}/> */}
+            <LeaderboardListComponent users={dashData.friends} />
           </DataTable>
         </View>
       </View>
       <View style={styles.tasksContainer}>
         <Text style={styles.titleText}>My Tasks</Text>
         <View>
-          {/* <TaskListComponent tasks={taskdata} navigation={navigation}/> */}
+          <TaskListComponent tasks={dashData.tasks} navigation={navigation} />
         </View>
       </View>
+      {/* Snackbars - display errors to user */}
+      <Snackbar
+        visible={snackBarVisible}
+        onDismiss={onDismissSnackBar}
+        rippleColor={"#4F83A5"}
+        action={{
+          label: "Dismiss",
+          textColor: "#4F83A5",
+          onPress: () => {
+            // Do something
+          },
+        }}>
+        <Text style={{ color: "white" }}>{snackbarMessage}</Text>
+      </Snackbar>
+      <LoadingOverlay visible={isLoading} />
       <StatusBar style='auto' />
     </SafeAreaView>
   );

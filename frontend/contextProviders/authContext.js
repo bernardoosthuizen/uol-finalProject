@@ -38,7 +38,14 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = () => {
-    return signOut(auth); // Use signOut from Firebase auth
+    try {
+      setCurrentUser(null);
+      signOut(auth);
+    }
+    catch (error) {
+      console.error("Error during sign out:", error);
+    
+    }
   };
 
   // Reset password function
