@@ -75,6 +75,7 @@ function LoggedInRoutes() {
         name='Home'
         component={Home}
         options={{
+          tabBarActiveBackgroundColor: "#bbe1fa",
           tabBarShowLabel: false,
           unmountOnBlur: true,
           headerShown: false,
@@ -92,12 +93,13 @@ function LoggedInRoutes() {
         name='Tasks'
         component={Tasks}
         options={{
+          tabBarActiveBackgroundColor: "#bbe1fa",
           tabBarShowLabel: false,
           headerShown: false,
           tabBarIcon: ({ size, focused, color }) => {
             return (
               <Image
-                style={{ width: size, height: size }}
+                style={{ width: size * 1.4, height: size * 1.4 }}
                 source={require("./assets/icons/tasks.png")}
               />
             );
@@ -109,6 +111,7 @@ function LoggedInRoutes() {
         component={AddTask}
         initialParams={{ taskdata: null }}
         options={{
+          tabBarActiveBackgroundColor: "#f0f0f0",
           tabBarShowLabel: false,
           unmountOnBlur: true,
           headerShown: false,
@@ -127,6 +130,7 @@ function LoggedInRoutes() {
         name='Leaderboard'
         component={Leaderboard}
         options={{
+          tabBarActiveBackgroundColor: "#bbe1fa",
           tabBarShowLabel: false,
           unmountOnBlur: true,
           headerShown: false,
@@ -143,6 +147,7 @@ function LoggedInRoutes() {
       <Tab.Screen
         name='Profile'
         options={{
+          tabBarActiveBackgroundColor: "#bbe1fa",
           tabBarShowLabel: false,
           headerShown: false,
           tabBarBadge: friendRequests.length > 0 ? friendRequests.length : null,

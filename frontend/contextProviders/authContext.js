@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
   // State to store current user
   const [currentUser, setCurrentUser] = useState(null);
   // State to store loading status
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   // Firebase auth instance
   const auth = getAuth();
 
@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
-      setLoading(false);
+      // setLoading(false);
     });
     return unsubscribe; // Cleanup subscription on unmount
   }, []);
@@ -102,13 +102,11 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         currentUser,
-        loading,
-        setLoading,
         logout,
         deleteAccount,
         resetPassword,
       }}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };

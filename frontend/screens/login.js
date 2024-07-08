@@ -8,7 +8,7 @@ sees when they open the app.
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View, SafeAreaView, Image, TextInput, Pressable } from "react-native";
 import { Dimensions } from "react-native";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {auth} from '../services/firebaseConfig';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { Snackbar } from "react-native-paper";
@@ -20,22 +20,23 @@ export default function Login({ navigation }) {
 
   const { isConnected } = useConnectivity();
 
-  if (!isConnected) {
-    setSnackBarVisible(true);
-    setSnackbarMessage("No internet connection.");
-  }
+  // Snack bar state
+  const [snackBarVisible, setSnackBarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
+  const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
+
+  useEffect(() => {
+    if (!isConnected) {
+      setSnackBarVisible(true);
+      setSnackbarMessage("No internet connection.");
+    }
+  },[]);
+  
 
   // State for email and password
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
   const [isLoading, setLoading] = useState(false);
-
-  
-
-  // Snack bar state
-  const [snackBarVisible, setSnackBarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
-  const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
 
   // Sign in function
   const signIn = () => {
@@ -117,7 +118,7 @@ export default function Login({ navigation }) {
         }}>
         <Text style={{ color: "white" }}>{snackbarMessage}</Text>
       </Snackbar>
-      < LoadingOverlay visible={isLoading} />
+      <LoadingOverlay visible={isLoading} />
       <StatusBar style='auto' />
     </SafeAreaView>
   );

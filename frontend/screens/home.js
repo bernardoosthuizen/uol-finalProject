@@ -45,18 +45,22 @@ export default function Home({ navigation }) {
 
   const { isConnected } = useConnectivity();
 
-  if (!isConnected) {
-    setSnackBarVisible(true);
-    setSnackbarMessage("No internet connection.");
-  }
-
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
   const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
 
+  // if (!isConnected) {
+  //   setSnackBarVisible(true);
+  //   setSnackbarMessage("No internet connection.");
+  // }
+
   // get dashboard data
   useEffect(() => {
+    if (!isConnected) {
+      setSnackBarVisible(true);
+      setSnackbarMessage("No internet connection.");
+    }
     setLoading(true);
     fetch(`http://localhost:3000/dashboard/${currentUser.uid}`, {
       method: "GET",
