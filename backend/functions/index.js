@@ -64,6 +64,52 @@ app.use(limiter);
 // -------------------------------------------------------
 // --------------   API endpoints ------------------------
 
+// Get dashboard data
+app.get("/dashboard/:userId", apiKeyMiddleware, (req, res) => {
+  const { userId } = req.params;
+
+  // Get user data from firestore
+  db.collection("users")
+    .doc(userId)
+    .get()
+    .then((doc) => {
+      if (!doc.exists) {
+        return res.status(404).send({ message: "User not found" });
+      }
+      const userData = doc.data();
+      // Get tasks from firestore
+      db.collection(`tasks-${userId}`)
+        .get()
+        .then((snapshot) => {
+          const tasks = [];
+          snapshot.forEach((doc) => {
+            tasks.push({
+              id: doc.id,
+              ...doc.data(),
+            });
+          });
+          // Get friends from Neo4j
+          session
+            .run(
+              `MATCH (u:User {user_id: $userId})-[:FRIEND]->(f:User)
+             RETURN f`,
+              { userId }
+            )
+            .then((result) => {
+              const friends = result.records.map(
+                (record) => record.get("f").properties
+              );
+              return res.status(200).send({ user: userData, tasks, friends });
+            });
+        });
+    })
+    .catch((error) => {
+      // Handle error
+      const { code, message } = error;
+      return res.status(code).send({ error: message });
+    });
+});
+
 // Create a new user
 app.post("/new-user",apiKeyMiddleware, userValidator, (req, res) => {
   // Check for validation errors
@@ -108,7 +154,7 @@ app.post("/new-user",apiKeyMiddleware, userValidator, (req, res) => {
                 user_id
               );
               ref
-                .set(["obnne"]
+                .set(["placeholder"]
                 )
                 .then(() => {
                   return res.status(201).send({ user_id: user_id });
@@ -301,29 +347,68 @@ app.post("/send-friend-request", apiKeyMiddleware, (req, res) => {
         });
     }
   );
-  // ref
-  //   .set([userId])
-  //   .then(() => {
-  //     return res.status(201).send({ message: "Friend request sent" });
-  //   });
 });
 // -------------------------------------------------------
 
 // Add a friend
 app.post("/add-friend", (req, res) => {
   const {userId, friendId} = req.body;
-
   // Modify Neo4j database
+  // Add friend relationship between users
   session
     .run(
-      "MATCH (u:User {user_id: $userId}), (f:User {user_id: $friendId}) CREATE (u)-[:FRIEND]->(f)",
+      `MATCH (u:User {user_id: $userId}), (f:User {user_id: $friendId})
+      MERGE (u)-[:friend]->(f)
+      MERGE (f)-[:friend]->(u)`,
       { userId, friendId }
     )
+    .then((result) => {
+      // Remove friend request from firebase realtime database
+      const ref = realtimeDb.ref(userId);
+      ref.once(
+        "value",
+        (snapshot) => {
+          const requests = snapshot.val() || [];
+          const updatedRequests = requests.filter((id) => id !== friendId);
+          ref
+            .set(updatedRequests)
+        },
+      );
+    })
     .then(() => {
       return res.status(201).send({ message: "Friend added"});
+    })
+    .catch((error) => {
+      const { code, message } = error;
+      return res.status(code).send({ error: message });
     });
 });
 // -------------------------------------------------------
+
+// Search for many users
+app.post("/search-friends", apiKeyMiddleware, (req, res) => {
+  const {userIds} = req.body;
+
+  // Search for users in Neo4j database
+  session
+    .run(
+      `MATCH (u:User)
+     WHERE u.user_id IN $userIds
+     RETURN u`,
+      { userIds }
+    )
+    .then((result) => {
+      const users = result.records.map(
+        (record) => record.get("u").properties
+      );
+      return res.status(200).send(users);
+    })
+    .catch((error) => {
+      // Handle error
+      const { code, message } = error;
+      return res.status(500).send({ error: message });
+    });
+});
 
 // Search for a user
 app.get("/search-friend/:userName", apiKeyMiddleware, (req, res) => {
@@ -346,6 +431,34 @@ app.get("/search-friend/:userName", apiKeyMiddleware, (req, res) => {
     });
 });
 // -------------------------------------------------------
+
+// Reject friend request
+app.delete("/reject-friend-request/:userId/:friendId", apiKeyMiddleware, (req, res) => {
+  const {userId, friendId} = req.params;
+  console.log("Reject friend request", userId, friendId);
+  // Remove friend request from firebase realtime database
+  const ref = realtimeDb.ref(userId);
+  ref.once(
+    "value",
+    (snapshot) => {
+      const requests = snapshot.val() || [];
+      const updatedRequests = requests.filter((id) => id !== friendId);
+      ref
+        .set(updatedRequests)
+        .then(() => {
+          
+          res.status(204).send({ message: "Friend request rejected" })})
+    },
+    (error) => {
+      res
+        .status(500)
+        .send({
+          message: "Error",
+          error: error.message,
+        });
+    }
+  );
+});
 
 // Add a new task
 app.post("/new-task", apiKeyMiddleware, taskValidator, (req, res) => {

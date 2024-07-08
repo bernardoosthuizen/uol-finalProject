@@ -6,7 +6,7 @@ when they are logged in.
 
 // Import necessary modules
 import { StatusBar } from "expo-status-bar";
-import { useState, useEffect } from 'react';
+import { useState, useEffect,  } from 'react';
 import {
     StyleSheet,
     Text,
@@ -17,15 +17,18 @@ import {
 import { Dimensions, Alert } from "react-native";
 import { useAuth } from '../contextProviders/authContext';
 import { Snackbar } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
 
 
-export default function Profile({ navigation}) {
+export default function Profile({ friendRequests }) {
   const { width } = Dimensions.get("window");
   // Auth context
   const { logout, deleteAccount, resetPassword, currentUser } = useAuth();
   // User data state
   const [userData, setUserData] = useState();
   const [isLoading, setIsLoading] = useState(true);
+
+  const navigation = useNavigation();
   
 
   // Snack bar state
@@ -104,7 +107,7 @@ export default function Profile({ navigation}) {
           {userData ? userData.score : null}
         </Text>
       </View>
-      <View style={{ flex: 3 }}>
+      <View style={{ flex: 2 }}>
         <Pressable
           style={({ pressed }) => [
             { opacity: pressed ? 0.5 : 1.0, width: width * 0.7 },
@@ -116,6 +119,21 @@ export default function Profile({ navigation}) {
           <Text style={{ color: "black" }}>Find Friends</Text>
         </Pressable>
       </View>
+      {/* Display pending friend requests if there are any */}
+      {friendRequests.length > 0 && (
+        <View style={{ flex: 2 }}>
+          <Pressable
+            style={({ pressed }) => [
+              { opacity: pressed ? 0.5 : 1.0, width: width * 0.7 },
+              styles.buttonPrimary,
+            ]}
+            onPress={() => {
+              navigation.navigate("Friend Request", { friendRequests });
+            }}>
+            <Text style={{ color: "white" }}>Pending Requests</Text>
+          </Pressable>
+        </View>
+      )}
       <View style={styles.linkContainer}>
         <Pressable
           onPress={() => {
@@ -235,11 +253,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#4F83A5",
   },
+  buttonPrimary: {
+    alignItems: "center",
+    height: 50,
+    padding: 15,
+    margin: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    backgroundColor: "#4F83A5",
+    borderColor: "#4F83A5",
+  },
   linkContainer: {
     flex: 2,
     width: "80%",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: '15%',
+    padding: "15%",
   },
 });

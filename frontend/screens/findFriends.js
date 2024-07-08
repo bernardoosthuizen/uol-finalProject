@@ -90,6 +90,11 @@ export default function FindFriends({ navigation }) {
         return response.json();
       })
       .then((data) => {
+        // remove friend from list
+        const updatedList = friends.filter(
+          (friend) => friend.user_id !== friendId
+        );
+        setFriends(updatedList);
         setSnackBarVisible(true);
         setSnackbarMessage("Request sent!");
       })

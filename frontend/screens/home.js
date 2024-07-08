@@ -18,6 +18,8 @@ import { DataTable } from "react-native-paper";
 // import custom components
 import TaskListComponent from '../components/taskListComponent';
 import LeaderboardListComponent from '../components/leaderboardListComponent';
+import { useEffect } from 'react';
+import { useAuth } from '../contextProviders/authContext';
 
 
 export function LeaderItem ({ item }) {
@@ -32,14 +34,27 @@ export function LeaderItem ({ item }) {
 
 export default function Home({ navigation }) {
   const { width } = Dimensions.get("window");
+  const {currentUser} = useAuth();
 
-  const leaderdata=[
-              { name: "Devin", rank: 1, score: 50 },
-              { name: "Dan", rank: 2, score: 50 },
-              { name: "Dominic", rank: 3, score: 50 },
-              { name: "Jackson", rank: 4, score: 50 },
-              { name: "James", rank: 5, score: 50 },
-            ]
+  // get dashboard data
+  useEffect(() => {
+    fetch(`http://localhost:3000/dashboard${currentUser.uid}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
+      },
+    })
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((error) => {
+        console.error("Failed to get dashboard data", error.message);
+      });
+  }, []);
 
     const taskdata = [
       { title: "Devin", prority: "high", due: 50, id: 123 },

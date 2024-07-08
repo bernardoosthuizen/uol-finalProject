@@ -43,7 +43,6 @@ function LoggedInRoutes() {
   const { currentUser } = useAuth();
 
   useEffect(() => {
-    console.log(currentUser.uid);
     // Specify the path to data in realtime database
     const requests = ref(realtimeDb, currentUser.uid);
 
@@ -51,7 +50,14 @@ function LoggedInRoutes() {
        requests,
        (snapshot) => {
          const data = snapshot.val();
-         setFriendRequests(data ? data : []);
+         console.log(data);
+         const friendRequests = data
+           ? data.filter((friend) => friend !== "placeholder")
+           : [];
+          //  filter out the friend 'placeholder' value
+          
+          console.log(friendRequests);
+          setFriendRequests(friendRequests ? friendRequests : []);
        },
        (error) => {
          console.error(error);
@@ -129,7 +135,6 @@ function LoggedInRoutes() {
       />
       <Tab.Screen
         name='Profile'
-        component={Profile}
         options={{
           headerShown: false,
           tabBarBadge: friendRequests.length > 0 ? friendRequests.length : null,
@@ -142,7 +147,9 @@ function LoggedInRoutes() {
             );
           },
         }}
-      />
+      >
+        {()=>(<Profile friendRequests={friendRequests}/>)}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }
