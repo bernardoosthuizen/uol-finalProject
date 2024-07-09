@@ -32,8 +32,6 @@ export const AuthProvider = ({ children }) => {
     __DEV__ ? "http://localhost:3000" : "https://api.example.com"
   );
 
-  console.log("API URL:", apiUrl);
-
   // Subscribe to auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {

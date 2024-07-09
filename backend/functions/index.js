@@ -147,11 +147,7 @@ app.post("/api/create-user",apiKeyMiddleware, userValidator, (req, res) => {
             .doc()
             .set({ title: "Sample task" })
             .then(() => {
-              // Send response
               // create firebase realtime database entry
-
-              
-              
               const ref = realtimeDb.ref(
                 user_id
               );

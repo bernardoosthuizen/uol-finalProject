@@ -19,6 +19,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../contextProviders/authContext';
 import { Snackbar } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import LoadingOverlay from "../components/loadingOverlay";
 
 
 export default function FriendRequest({ route, navigation }) {
@@ -26,6 +27,7 @@ export default function FriendRequest({ route, navigation }) {
   const friendRequests = route.params.friendRequests;
   const [requestList, setRequestList] = useState([]);
   const { currentUser, apiUrl } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
@@ -49,6 +51,7 @@ export default function FriendRequest({ route, navigation }) {
       })
       .then((data) => {
         setRequestList(data);
+        setIsLoading(false);
       })
       .catch((error) => {
         console.error("Failed to get friend requests", error.message);
@@ -58,6 +61,7 @@ export default function FriendRequest({ route, navigation }) {
   }, []);
 
   handleAccept = (friendId) => {
+    setIsLoading(true);
     fetch(`${apiUrl}/api/add-friend`, {
       method: "POST",
       headers: {
@@ -78,6 +82,7 @@ export default function FriendRequest({ route, navigation }) {
           (requestItem) => requestItem.user_id !== friendId
         );
         setRequestList(updatedList);
+        setIsLoading(false);
         setSnackBarVisible(true);
         setSnackbarMessage("Friend added!");
         if (updatedList.length === 0) {
@@ -92,6 +97,7 @@ export default function FriendRequest({ route, navigation }) {
   };
 
   handleReject = (friendId) => {
+    setIsLoading(true);
     fetch(
       `${apiUrl}/api/reject-friend-request/${currentUser.uid}/${friendId}`,
       {
@@ -115,6 +121,7 @@ export default function FriendRequest({ route, navigation }) {
           (requestItem) => requestItem.user_id !== friendId
         );
         setRequestList(updatedList);
+        setIsLoading(false);
         setSnackBarVisible(true);
         setSnackbarMessage("Friend request rejected!");
         if (updatedList.length === 0) {
@@ -199,6 +206,7 @@ export default function FriendRequest({ route, navigation }) {
         }}>
         <Text style={{ color: "white" }}>{snackbarMessage}</Text>
       </Snackbar>
+      <LoadingOverlay visible={isLoading} />
       <StatusBar style='auto' />
     </SafeAreaView>
   );
