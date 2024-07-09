@@ -39,10 +39,15 @@ export default function LeaderboardListComponent({ users }) {
                 <Text style={{ fontSize: width * 0.05 }}>{item.rank}</Text>
               </DataTable.Cell>
               <DataTable.Cell style={{ flex: 2 }}>
-                <Text style={{ fontSize: width * 0.05 }}>
-                  {item.user_id == currentUser.uid ? "Me" : item.name}
-                
-                </Text>
+                {item.user_id == currentUser.uid ? (
+                  <Text style={{ fontSize: width * 0.05, fontWeight: "bold" }}>
+                    Me
+                  </Text>
+                ) : (
+                  <Text style={{ fontSize: width * 0.05 }}>
+                    {item.name}
+                  </Text>
+                )}
               </DataTable.Cell>
               <DataTable.Cell numeric style={{ flex: 2 }}>
                 <Text style={{ fontSize: width * 0.05 }}>{item.score}</Text>
