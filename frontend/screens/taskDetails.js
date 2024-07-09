@@ -52,7 +52,7 @@ export default function Task({route, navigation}) {
 
   // Get the task data from the server
   useEffect(() => {
-    fetch(`http://localhost:3000/task/${currentUser.uid}/${taskId}`, {
+    fetch(`http://localhost:3000/api/task/${taskId}/user/${currentUser.uid}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -84,7 +84,7 @@ export default function Task({route, navigation}) {
 
   handleTaskComplete = () => {
     setLoadingOverlayVisible(true);
-    fetch(`http://localhost:3000/complete-task/${currentUser.uid}/${taskId}`, {
+    fetch(`http://localhost:3000/api/user/${currentUser.uid}/complete-task/${taskId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -111,13 +111,16 @@ export default function Task({route, navigation}) {
 
   const handleDeleteTask = () => {
     setLoadingOverlayVisible(true);
-    fetch(`http://localhost:3000/task/${currentUser.uid}/${taskId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
-      },
-    })
+    fetch(
+      `http://localhost:3000/api/user/${currentUser.uid}/complete-task/${taskId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
+        },
+      }
+    )
       .then((response) => {
         if (response.status === 204) {
           setLoadingOverlayVisible(false);
@@ -125,7 +128,7 @@ export default function Task({route, navigation}) {
           setSnackbarMessage("Task deleted successfully");
           // Navigate back
           navigation.navigate("LoggedInRoutes");
-        } 
+        }
       })
       .catch((error) => {
         setSnackBarVisible(true);

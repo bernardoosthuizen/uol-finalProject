@@ -34,7 +34,7 @@ export default function FriendRequest({ route, navigation }) {
 
   // Get friend details from
   useEffect(() => {
-    fetch(`http://localhost:3000/search-friends`, {
+    fetch(`http://localhost:3000/api/search-friends`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -59,7 +59,7 @@ export default function FriendRequest({ route, navigation }) {
   }, []);
 
   handleAccept = (friendId) => {
-    fetch(`http://localhost:3000/add-friend`, {
+    fetch(`http://localhost:3000/api/add-friend`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -94,7 +94,7 @@ export default function FriendRequest({ route, navigation }) {
 
   handleReject = (friendId) => {
     console.log("Reject", friendId);
-    fetch(`http://localhost:3000/reject-friend-request/${currentUser.uid}/${friendId}`, {
+    fetch(`http://localhost:3000/api/reject-friend-request/${currentUser.uid}/${friendId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

@@ -60,22 +60,25 @@ export default function EditTask({route, navigation}) {
 
     const saveTask = async () => {
       setLoading(true);
-        fetch(`http://localhost:3000/task/${currentUser.uid}/${taskId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
-          },
-          body: JSON.stringify({
-            title: taskTitle,
-            priority: taskPriority,
-            due_date: Date.parse(taskDue),
-            description: taskDescription,
-            details: taskDetails,
-            status: "open",
-            user_id: currentUser.uid,
-          }),
-        })
+        fetch(
+          `http://localhost:3000/api/task/${taskId}/user/${currentUser.uid}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
+            },
+            body: JSON.stringify({
+              title: taskTitle,
+              priority: taskPriority,
+              due_date: Date.parse(taskDue),
+              description: taskDescription,
+              details: taskDetails,
+              status: "open",
+              user_id: currentUser.uid,
+            }),
+          }
+        )
           .then((response) => {
             return response.json();
           })

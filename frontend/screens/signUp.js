@@ -49,15 +49,14 @@ export default function Login({ navigation }) {
         // this stores the user in the neo4j, firestore and realtime databases
         const user_id = userCredential.user.uid;
         const userData = { name, email, user_id };
-        fetch("http://localhost:3000/new-user", {
+        fetch("http://localhost:3000/api/create-user", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
           },
           body: JSON.stringify(userData),
-          
-        })
+        });
       })
       .catch((error) => {
         const errorCode = error.code;

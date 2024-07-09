@@ -62,7 +62,7 @@ export default function Home({ navigation }) {
       setSnackbarMessage("No internet connection.");
     }
     setLoading(true);
-    fetch(`http://localhost:3000/dashboard/${currentUser.uid}`, {
+    fetch(`http://localhost:3000/api/dashboard/${currentUser.uid}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

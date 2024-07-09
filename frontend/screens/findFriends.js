@@ -57,7 +57,7 @@ export default function FindFriends({ navigation, route }) {
       return;
     }
     // fetch user data from backend
-    fetch(`http://localhost:3000/search-friend/${searchQuery}`, {
+    fetch(`http://localhost:3000/api/search-friend/${searchQuery}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -97,7 +97,7 @@ export default function FindFriends({ navigation, route }) {
 
   handleSendRequest = (friendId) => {
     // send friend request
-    fetch(`http://localhost:3000/send-friend-request/`, {
+    fetch(`http://localhost:3000/api/send-friend-request/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

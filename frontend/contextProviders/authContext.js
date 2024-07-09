@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }) => {
         .then(() => {
           // User deleted from Firebase, now delete from backend
           const userId = user.uid; // Assuming you use Firebase UID as the user identifier in your backend
-          return fetch(`http://localhost:3000/user/${userId}`, {
+          return fetch(`http://localhost:3000/api/user/${userId}`, {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",

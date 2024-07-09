@@ -30,28 +30,27 @@ export default function Tasks({ navigation }) {
   useEffect(() => {
     const fetchTasks = async () => {
       setIsLoading(true);
-      fetch(`http://localhost:3000/tasks/${currentUser.uid}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
-          },
+      fetch(`http://localhost:3000/api/tasks/user/${currentUser.uid}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
+        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Failed to fetch tasks");
+          }
+          return response.json();
         })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("Failed to fetch tasks");
-            }
-            return response.json();
-          })
-          .then((data) => {
-            setTasks(data);
-            setIsLoading(false);
-          })
-          .catch((error) => {
-            setError(error);
-            setIsLoading(false);
-          });
+        .then((data) => {
+          setTasks(data);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          setError(error);
+          setIsLoading(false);
+        });
     };
 
     fetchTasks();

@@ -39,7 +39,7 @@ export default function Profile({ friendRequests }) {
 
   useEffect(() => {
     // fetch user data from backend
-    fetch(`http://localhost:3000/user/${currentUser.uid}`, {
+    fetch(`http://localhost:3000/api/user/${currentUser.uid}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

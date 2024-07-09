@@ -62,7 +62,7 @@ export default function AddTask({navigation}) {
 
   const handleTaskSave = () => {
     setLoading(true);
-    fetch("http://localhost:3000/new-task", {
+    fetch("http://localhost:3000/api/new-task", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

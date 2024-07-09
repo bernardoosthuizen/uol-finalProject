@@ -28,7 +28,7 @@ export default function Leaderboard({ navigation }) {
 
   useEffect(() => {
     // fetch user data from backend
-    fetch(`http://localhost:3000/friends/${currentUser.uid}`, {
+    fetch(`http://localhost:3000/api/friends/${currentUser.uid}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
