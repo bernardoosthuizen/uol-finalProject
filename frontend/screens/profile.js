@@ -116,7 +116,7 @@ export default function Profile({ friendRequests }) {
             styles.button,
           ]}
           onPress={() => {
-            navigation.navigate("Find Friends");
+            navigation.navigate("Find Friends", { signUpFlow: false });
           }}>
           <Text style={{ color: "black" }}>Find Friends</Text>
         </Pressable>

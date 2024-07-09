@@ -17,12 +17,12 @@ import {
 import { Dimensions  } from "react-native";
 import { DataTable } from "react-native-paper";
 import { Searchbar } from "react-native-paper";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from "react";
 import { Snackbar } from "react-native-paper";
 import { useAuth } from '../contextProviders/authContext';
 
 
-export default function FindFriends({ navigation }) {
+export default function FindFriends({ navigation, route }) {
   const { width } = Dimensions.get("window");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -30,11 +30,23 @@ export default function FindFriends({ navigation }) {
 
   const { currentUser } = useAuth();
 
+  const { signUpFlow } = route.params;
+
+  // const [signUpFlow, setSignUpFlow] = useState(true);
+
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
 
   const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
+
+  useLayoutEffect(() => {
+    if (signUpFlow) {
+      navigation.setOptions({
+        headerShown: false, // Default back button behavior: ;
+      });
+    }
+  }, [navigation]);
 
   useEffect(() => {
     if (searchQuery == "") {
@@ -103,7 +115,7 @@ export default function FindFriends({ navigation }) {
         setSnackbarMessage("An error occurred.", error.message);
         console.log(error);
       });
-  }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -173,6 +185,18 @@ export default function FindFriends({ navigation }) {
             ))}
           </ScrollView>
         </DataTable>
+        {signUpFlow ? (
+          <Pressable
+            style={({ pressed }) => [
+              { opacity: pressed ? 0.5 : 1.0, width: width * 0.8 },
+              styles.buttonPrimary,
+            ]}
+            onPress={() => {
+              navigation.navigate("LoggedInRoutes", { screen: "Home" });
+            }}>
+            <Text style={{ color: "white" }}>Done</Text>
+          </Pressable>
+        ) : null}
       </View>
       {/* Snackbars - display errors to user */}
       <Snackbar
@@ -183,7 +207,7 @@ export default function FindFriends({ navigation }) {
           label: "Dismiss",
           textColor: "#4F83A5",
           onPress: () => {
-            // Do something
+            navigation.navigate("LoggedInRoutes", { screen: "Home" });
           },
         }}>
         <Text style={{ color: "white" }}>{snackbarMessage}</Text>
@@ -221,5 +245,16 @@ const styles = StyleSheet.create({
     height: 50,
     width: "100%",
     borderBottomWidth: 0,
+  },
+  buttonPrimary: {
+    alignItems: "center",
+    backgroundColor: "#4F83A5",
+    justifyContent: "center",
+    height: 50,
+    padding: 10,
+    margin: 12,
+    borderRadius: 8,
+    position: "absolute",
+    bottom: 20,
   },
 });

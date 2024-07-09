@@ -122,6 +122,8 @@ export default function TaskListComponent({ tasks, header, navigation }) {
       ) : null}
       <ScrollView>
         {tasks?.map((item) => (
+          // Skip tasks that are already completed
+          item.status === 'completed' ? null :
           <Pressable
             key={item.id}
             style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1.0 }]}

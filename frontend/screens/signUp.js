@@ -44,6 +44,7 @@ export default function Login({ navigation }) {
     // Sign up with email and password from Firebase
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
+        navigation.navigate("Find Friends", { signUpFlow: true });
         // Send post request to backend
         // this stores the user in the neo4j, firestore and realtime databases
         const user_id = userCredential.user.uid;
@@ -55,10 +56,8 @@ export default function Login({ navigation }) {
             "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
           },
           body: JSON.stringify(userData),
+          
         })
-          .then((response) => {
-            response.json();
-          })
       })
       .catch((error) => {
         const errorCode = error.code;

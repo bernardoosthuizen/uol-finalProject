@@ -80,7 +80,6 @@ app.get("/dashboard/:userId", apiKeyMiddleware, (req, res) => {
       const userData = doc.data();
       // Get tasks from firestore
       db.collection(`tasks-${userId}`)
-        .where("status", "!=", "completed")
         .orderBy("due_date")
         .limit(5)
         .get()
@@ -534,7 +533,6 @@ app.get(
 
     // Get tasks from firestore database by user id
     db.collection(`tasks-${userId}`)
-      .where("status", "!=", "completed")
       .orderBy("due_date")
       .get()
       .then((snapshot) => {
@@ -636,8 +634,6 @@ app.put("/complete-task/:userId/:taskId", apiKeyMiddleware, (req, res) => {
         return res.status(404).send({ message: "User not found" });
       }
       userData = doc.data();
-      console.log(newScore)
-      // console.log("User data", userData)
     })
     .then(()=>{
       // Get task data from firestore
@@ -722,14 +718,16 @@ app.put("/complete-task/:userId/:taskId", apiKeyMiddleware, (req, res) => {
               newScore -= 50;
             } else if (differenceInDays > 0) {
               newScore -= 25;
-            } 
+            } else if (differenceInDays > 10) {
+              newScore -= 100;
+            }
           }
 
           // Update user data in firestore
           db.collection("users")
             .doc(userId)
             .update({
-              score: newScore,
+              score: newScore + userData.score,
               last_task_completed_date: new Date().toISOString(),
               task_day_streak: newDayStreak,
               task_week_streak: newWeekStreak,
