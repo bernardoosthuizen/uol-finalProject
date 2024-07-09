@@ -53,7 +53,6 @@ export default function AddTask({navigation}) {
   const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
 
   const handleDateConfirm = (date) => {
-    alert("A date has been picked: ", date);
     setTaskDue(date.toISOString());
     setDatePickerVisibility(false);
   };

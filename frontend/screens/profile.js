@@ -89,6 +89,22 @@ export default function Profile({ friendRequests }) {
     });
   };
 
+  const determineScoreFont = (score) => {
+    if (!score) {
+      return width * 0.3;
+    }
+    const length = score.toString().length;
+    if (length > 6) {
+      return width * 0.1;
+    } else if (length > 4) {
+      return width * 0.15;
+    } else {
+      return width * 0.3;
+    }
+  }
+
+  const scoreFontSize = determineScoreFont(userData?.score);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.titleContainer}>
@@ -105,7 +121,11 @@ export default function Profile({ friendRequests }) {
         <Text style={{ fontSize: width * 0.05 }}>
           {userData?.score ? "Score" : "No Score"}
         </Text>
-        <Text style={{ fontSize: width * 0.3, fontWeight: "bold" }}>
+        <Text
+          style={{
+            fontSize: scoreFontSize,
+            fontWeight: "bold",
+          }}>
           {userData ? userData.score : null}
         </Text>
       </View>
