@@ -21,6 +21,7 @@ import {auth} from '../services/firebaseConfig';
 import { createUserWithEmailAndPassword} from 'firebase/auth';
 import { Snackbar } from "react-native-paper";
 import LoadingOverlay from "../components/loadingOverlay";
+import { useAuth } from '../contextProviders/authContext';
 
 
 export default function Login({ navigation }) {
@@ -32,6 +33,8 @@ export default function Login({ navigation }) {
   const [password, onChangePassword] = useState("");
 
   const [isLoading, setLoading] = useState(false);
+
+  const { apiUrl } = useAuth();
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
@@ -49,7 +52,7 @@ export default function Login({ navigation }) {
         // this stores the user in the neo4j, firestore and realtime databases
         const user_id = userCredential.user.uid;
         const userData = { name, email, user_id };
-        fetch("http://localhost:3000/api/create-user", {
+        fetch(`${apiUrl}/api/create-user`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

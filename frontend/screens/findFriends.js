@@ -28,7 +28,7 @@ export default function FindFriends({ navigation, route }) {
   const [isLoading, setIsLoading] = useState(false);
   const [friends, setFriends] = useState([]);
 
-  const { currentUser } = useAuth();
+  const { currentUser, apiUrl } = useAuth();
 
   const { signUpFlow } = route.params;
 
@@ -57,7 +57,7 @@ export default function FindFriends({ navigation, route }) {
       return;
     }
     // fetch user data from backend
-    fetch(`http://localhost:3000/api/search-friend/${searchQuery}`, {
+    fetch(`${apiUrl}/api/search-friend/${searchQuery}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -97,7 +97,7 @@ export default function FindFriends({ navigation, route }) {
 
   handleSendRequest = (friendId) => {
     // send friend request
-    fetch(`http://localhost:3000/api/send-friend-request/`, {
+    fetch(`${apiUrl}/api/send-friend-request/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -126,11 +126,9 @@ export default function FindFriends({ navigation, route }) {
         setSnackbarMessage("Request sent!");
       })
       .catch((error) => {
-        
         setSnackBarVisible(true);
         setSnackbarMessage("An error occurred.", error.message);
         console.log(error);
-        
       });
   };
 

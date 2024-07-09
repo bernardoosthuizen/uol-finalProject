@@ -18,7 +18,7 @@ export default function Task({route, navigation}) {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingOverlayVisible, setLoadingOverlayVisible] = useState(true);
 
-  const { currentUser } = useAuth();
+  const { currentUser, apiUrl } = useAuth();
   const { taskId, goBack } = route.params;
 
 
@@ -52,7 +52,7 @@ export default function Task({route, navigation}) {
 
   // Get the task data from the server
   useEffect(() => {
-    fetch(`http://localhost:3000/api/task/${taskId}/user/${currentUser.uid}`, {
+    fetch(`${apiUrl}/api/task/${taskId}/user/${currentUser.uid}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -84,7 +84,7 @@ export default function Task({route, navigation}) {
 
   handleTaskComplete = () => {
     setLoadingOverlayVisible(true);
-    fetch(`http://localhost:3000/api/user/${currentUser.uid}/complete-task/${taskId}`, {
+    fetch(`${apiUrl}/api/user/${currentUser.uid}/complete-task/${taskId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -97,30 +97,26 @@ export default function Task({route, navigation}) {
           setSnackBarVisible(true);
           setSnackbarMessage("Task completed successfully");
           // Navigate back
-          navigation.navigate("LoggedInRoutes", {screen: "Tasks"});
-        } 
+          navigation.navigate("LoggedInRoutes", { screen: "Tasks" });
+        }
       })
       .catch((error) => {
         setSnackBarVisible(true);
         setSnackbarMessage("Failed to complete task", error.message);
         navigation.navigate("ProtectedRoutes");
         console.log(error);
-      
-    })
+      });
   }
 
   const handleDeleteTask = () => {
     setLoadingOverlayVisible(true);
-    fetch(
-      `http://localhost:3000/api/user/${currentUser.uid}/complete-task/${taskId}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
-        },
-      }
-    )
+    fetch(`${apiUrl}/api/user/${currentUser.uid}/complete-task/${taskId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
+      },
+    })
       .then((response) => {
         if (response.status === 204) {
           setLoadingOverlayVisible(false);

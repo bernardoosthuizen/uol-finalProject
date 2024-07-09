@@ -27,6 +27,13 @@ export const AuthProvider = ({ children }) => {
   // Firebase auth instance
   const auth = getAuth();
 
+  // Dev or Prod API URL
+  const [apiUrl, setApiUrl] = useState(
+    __DEV__ ? "http://localhost:3000" : "https://api.example.com"
+  );
+
+  console.log("API URL:", apiUrl);
+
   // Subscribe to auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -47,6 +54,7 @@ export const AuthProvider = ({ children }) => {
     
     }
   };
+
 
   // Reset password function
   const resetPassword = () => {
@@ -70,7 +78,7 @@ export const AuthProvider = ({ children }) => {
         .then(() => {
           // User deleted from Firebase, now delete from backend
           const userId = user.uid; // Assuming you use Firebase UID as the user identifier in your backend
-          return fetch(`http://localhost:3000/api/user/${userId}`, {
+          return fetch(`${apiUrl}/api/user/${userId}`, {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
@@ -104,6 +112,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         deleteAccount,
         resetPassword,
+        apiUrl,
       }}>
       {children}
     </AuthContext.Provider>

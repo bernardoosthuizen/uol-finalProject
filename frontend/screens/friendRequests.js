@@ -25,7 +25,7 @@ export default function FriendRequest({ route, navigation }) {
   const { width } = Dimensions.get("window");
   const friendRequests = route.params.friendRequests;
   const [requestList, setRequestList] = useState([]);
-  const { currentUser } = useAuth();
+  const { currentUser, apiUrl } = useAuth();
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
@@ -34,7 +34,7 @@ export default function FriendRequest({ route, navigation }) {
 
   // Get friend details from
   useEffect(() => {
-    fetch(`http://localhost:3000/api/search-friends`, {
+    fetch(`${apiUrl}/api/search-friends`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -59,7 +59,7 @@ export default function FriendRequest({ route, navigation }) {
   }, []);
 
   handleAccept = (friendId) => {
-    fetch(`http://localhost:3000/api/add-friend`, {
+    fetch(`${apiUrl}/api/add-friend`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -94,13 +94,16 @@ export default function FriendRequest({ route, navigation }) {
 
   handleReject = (friendId) => {
     console.log("Reject", friendId);
-    fetch(`http://localhost:3000/api/reject-friend-request/${currentUser.uid}/${friendId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
-      },
-    })
+    fetch(
+      `${apiUrl}/api/reject-friend-request/${currentUser.uid}/${friendId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
+        },
+      }
+    )
       .then((response) => {
         if (!response.ok) {
           throw new Error(response.statusText);

@@ -24,7 +24,7 @@ import LoadingOverlay from "../components/loadingOverlay";
 export default function Profile({ friendRequests }) {
   const { width } = Dimensions.get("window");
   // Auth context
-  const { logout, deleteAccount, resetPassword, currentUser } = useAuth();
+  const { logout, deleteAccount, resetPassword, currentUser, apiUrl } = useAuth();
   // User data state
   const [userData, setUserData] = useState();
   const [isLoading, setIsLoading] = useState(true);
@@ -39,7 +39,7 @@ export default function Profile({ friendRequests }) {
 
   useEffect(() => {
     // fetch user data from backend
-    fetch(`http://localhost:3000/api/user/${currentUser.uid}`, {
+    fetch(`${apiUrl}/api/user/${currentUser.uid}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

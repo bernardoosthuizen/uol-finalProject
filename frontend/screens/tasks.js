@@ -23,14 +23,14 @@ export default function Tasks({ navigation }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const { currentUser } = useAuth();
+  const { currentUser, apiUrl } = useAuth();
 
   const isVisible = useIsFocused();
 
   useEffect(() => {
     const fetchTasks = async () => {
       setIsLoading(true);
-      fetch(`http://localhost:3000/api/tasks/user/${currentUser.uid}`, {
+      fetch(`${apiUrl}/api/tasks/user/${currentUser.uid}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

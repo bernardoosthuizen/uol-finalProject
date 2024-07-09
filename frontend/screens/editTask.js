@@ -32,7 +32,7 @@ export default function EditTask({route, navigation}) {
       return d.toDateString();
     };
 
-    const {currentUser} = useAuth();
+    const {currentUser, apiUrl} = useAuth();
     
 
     const newDate = displayDate(taskDue);
@@ -61,7 +61,7 @@ export default function EditTask({route, navigation}) {
     const saveTask = async () => {
       setLoading(true);
         fetch(
-          `http://localhost:3000/api/task/${taskId}/user/${currentUser.uid}`,
+          `${apiUrl}/api/task/${taskId}/user/${currentUser.uid}`,
           {
             method: "PUT",
             headers: {

@@ -24,11 +24,11 @@ export default function Leaderboard({ navigation }) {
 
   const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
 
-  const { currentUser } = useAuth();
+  const { currentUser, apiUrl } = useAuth();
 
   useEffect(() => {
     // fetch user data from backend
-    fetch(`http://localhost:3000/api/friends/${currentUser.uid}`, {
+    fetch(`${apiUrl}/api/friends/${currentUser.uid}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

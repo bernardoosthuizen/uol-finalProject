@@ -24,7 +24,7 @@ import { Snackbar } from "react-native-paper";
 import LoadingOverlay from "../components/loadingOverlay";
 
 export default function AddTask({navigation}) {
-  const { currentUser } = useAuth();
+  const { currentUser, apiUrl } = useAuth();
   const [taskTitle, setTaskTitle] = useState(null);
   const [taskPriority, setTaskPriority] = useState(null);
   const [taskDue, setTaskDue] = useState(new Date());
@@ -62,7 +62,7 @@ export default function AddTask({navigation}) {
 
   const handleTaskSave = () => {
     setLoading(true);
-    fetch("http://localhost:3000/api/new-task", {
+    fetch(`${apiUrl}/api/new-task`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

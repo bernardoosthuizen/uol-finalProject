@@ -26,6 +26,8 @@ import { useConnectivity } from '../contextProviders/connectivityContext';
 import { useAuth } from '../contextProviders/authContext';
 
 
+
+
 export function LeaderItem ({ item }) {
     return (
         <View>
@@ -38,11 +40,9 @@ export function LeaderItem ({ item }) {
 
 export default function Home({ navigation }) {
   const { width } = Dimensions.get("window");
-  const { currentUser } = useAuth();
+  const { currentUser, apiUrl } = useAuth();
   const [dashData, setDashData] = useState({});
-
   const [isLoading, setLoading] = useState(false);
-
   const { isConnected } = useConnectivity();
 
   // Snack bar state
@@ -50,10 +50,6 @@ export default function Home({ navigation }) {
   const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
   const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
 
-  // if (!isConnected) {
-  //   setSnackBarVisible(true);
-  //   setSnackbarMessage("No internet connection.");
-  // }
 
   // get dashboard data
   useEffect(() => {
@@ -62,7 +58,7 @@ export default function Home({ navigation }) {
       setSnackbarMessage("No internet connection.");
     }
     setLoading(true);
-    fetch(`http://localhost:3000/api/dashboard/${currentUser.uid}`, {
+    fetch(`${apiUrl}/api/dashboard/${currentUser.uid}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
