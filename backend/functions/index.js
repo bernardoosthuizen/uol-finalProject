@@ -355,7 +355,7 @@ app.post("/api/send-friend-request", apiKeyMiddleware, (req, res) => {
 // -------------------------------------------------------
 
 // Add a friend
-app.post("/api/add-friend", (req, res) => {
+app.post("/api/add-friend", apiKeyMiddleware, (req, res) => {
   const {userId, friendId} = req.body;
   // Modify Neo4j database
   // Add friend relationship between users
