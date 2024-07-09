@@ -49,6 +49,10 @@ export default function FindFriends({ navigation, route }) {
   }, [navigation]);
 
   useEffect(() => {
+    const abortController = new AbortController(); // Create an instance of AbortController
+    const signal = abortController.signal; // Get the signal to pass to fetch
+
+
     if (searchQuery == "") {
       return;
     }
@@ -59,6 +63,7 @@ export default function FindFriends({ navigation, route }) {
         "Content-Type": "application/json",
         "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
       },
+      signal: signal,
     })
       .then((response) => {
         if (response.status == 404) {
@@ -68,16 +73,26 @@ export default function FindFriends({ navigation, route }) {
         return response.json();
       })
       .then((data) => {
-        setFriends(data);
-
+        if (Array.isArray(data)) {
+          setFriends(data);
+        } else {
+          setFriends([]); // Reset to empty array or handle accordingly
+        }
         setIsLoading(false);
       })
       .catch((error) => {
-        setSnackBarVisible(true);
-        setSnackbarMessage("An error occurred.", error.message);
-        navigation.navigate("LoggedInRoutes", { screen: "Home" });
-        console.log(error);
+        if (error.name !== 'AbortError') {
+          setSnackBarVisible(true);
+          setSnackbarMessage("An error occurred.", error.message);
+          navigation.navigate("LoggedInRoutes", { screen: "Home" });
+          console.log(error);
+        } else {
+          return;
+        }
+
       });
+
+      return () => abortController.abort();
   }, [searchQuery]);
 
   handleSendRequest = (friendId) => {
@@ -111,9 +126,11 @@ export default function FindFriends({ navigation, route }) {
         setSnackbarMessage("Request sent!");
       })
       .catch((error) => {
+        
         setSnackBarVisible(true);
         setSnackbarMessage("An error occurred.", error.message);
         console.log(error);
+        
       });
   };
 
@@ -151,7 +168,7 @@ export default function FindFriends({ navigation, route }) {
         showDivider={false}
       />
       <Text style={{ fontSize: width * 0.05, color: "#4F83A5" }}>
-        {!friends ? "No friends found" : null}
+        {friends.length == 0 ? "No friends found" : null}
       </Text>
       <View style={styles.tableContainer}>
         <DataTable>
