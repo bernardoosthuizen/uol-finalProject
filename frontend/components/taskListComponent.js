@@ -9,6 +9,7 @@ import {
 import { Dimensions } from "react-native";
 import { DataTable } from "react-native-paper";
 import { useState, useEffect } from 'react';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 
 export default function TaskListComponent({ tasks, header, navigation }) {
@@ -127,71 +128,65 @@ export default function TaskListComponent({ tasks, header, navigation }) {
         </DataTable.Header>
       ) : null}
       <ScrollView>
-        {tasks?.map((item) =>
+        {tasks?.map((item) => (
           // Skip tasks that are already completed
-            <Pressable
-              key={item.id}
-              style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1.0 }]}
-              onPress={() => {
-                navigation.navigate("Task", { taskId: item.id, goBack: true });
-              }}>
-              <DataTable.Row key={item.id} style={styles.row}>
-                <DataTable.Cell style={{ flex: 2 }}>
-                  {/* Set image based on priority */}
-                  {item.priority === "high" && (
-                    <Image
-                      source={require("../assets/icons/high-priority.png")}
-                      style={{
-                        resizeMode: "contain",
-                      }}
-                      alt='priority icon'
-                    />
-                  )}
-                  {item.priority === "medium" && (
-                    <Image
-                      source={require("../assets/icons/medium-priority.png")}
-                      style={{
-                        resizeMode: "contain",
-                      }}
-                      alt='priority icon'
-                    />
-                  )}
-                  {item.priority === "low" && (
-                    <Image
-                      source={require("../assets/icons/low-priority.png")}
-                      style={{
-                        resizeMode: "contain",
-                      }}
-                      alt='priority icon'
-                    />
-                  )}
-                </DataTable.Cell>
-                <DataTable.Cell style={{ flex: 3 }}>
+          <Pressable
+            key={item.id}
+            style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1.0 }]}
+            onPress={() => {
+              navigation.navigate("Task", { taskId: item.id, goBack: true });
+            }}>
+            <DataTable.Row key={item.id} style={styles.row}>
+              <DataTable.Cell style={{ flex: 2 }}>
+                {/* Set image based on priority */}
+                {item.priority === "high" && (
+                  <MaterialCommunityIcons
+                    name='alert-rhombus-outline'
+                    size={26}
+                    color={"firebrick"}
+                  />
+                )}
+                {item.priority === "medium" && (
+                  <MaterialCommunityIcons
+                    name='alert-rhombus-outline'
+                    size={26}
+                    color={"goldenrod"}
+                  />
+                )}
+                {item.priority === "low" && (
+                  <MaterialCommunityIcons
+                    name='alert-rhombus-outline'
+                    size={26}
+                    color={"green"}
+                  />
+                )}
+              </DataTable.Cell>
+              <DataTable.Cell style={{ flex: 3 }}>
+                <Text style={{ fontSize: width * 0.04 }}>
+                  {truncateTitle(item.title, 35)}
+                </Text>
+              </DataTable.Cell>
+              <DataTable.Cell numeric style={{ flex: 3, flexDirection: "row" }}>
+                <View
+                  style={{
+                    flex: 1,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-around",
+                  }}>
+                  <MaterialCommunityIcons
+                    name='calendar-month-outline'
+                    size={26}
+                    color={"grey"}
+                  />
                   <Text style={{ fontSize: width * 0.04 }}>
-                    {truncateTitle(item.title, 35)}
+                    {setDateText(item.due_date)}
                   </Text>
-                </DataTable.Cell>
-                <DataTable.Cell
-                  numeric
-                  style={{ flex: 3, flexDirection: "row" }}>
-                  <View style={{ flex: 1, flexDirection: "row" }}>
-                    <Image
-                      source={require("../assets/icons/calendar.png")}
-                      style={{
-                        width: width * 0.01,
-                        flex: 1,
-                        resizeMode: "contain",
-                      }}
-                      alt='Calendar icon'
-                    />
-                    <Text style={{ fontSize: width * 0.04 }}>
-                      {setDateText(item.due_date)}
-                    </Text>
-                  </View>
-                </DataTable.Cell>
-              </DataTable.Row>
-            </Pressable>
-        )}
+                </View>
+              </DataTable.Cell>
+            </DataTable.Row>
+          </Pressable>
+        ))}
       </ScrollView>
     </DataTable>
   );

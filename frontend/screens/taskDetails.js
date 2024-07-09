@@ -11,6 +11,7 @@ import { useAuth } from '../contextProviders/authContext';
 import LoadingOverlay from "../components/loadingOverlay";
 import { Snackbar } from "react-native-paper";
 import { HeaderBackButton } from "@react-navigation/elements";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 // import { handlePress } from 'react-native-paper/src/components/RadioButton/utils';
 
 export default function Task({route, navigation}) {
@@ -81,6 +82,7 @@ export default function Task({route, navigation}) {
     const d = new Date(date);
     return d.toDateString();
   };
+
 
   handleTaskComplete = () => {
     setLoadingOverlayVisible(true);
@@ -159,11 +161,12 @@ export default function Task({route, navigation}) {
             </Text>
           </View>
           <View style={styles.dateContainer}>
-            <Image
-              source={require("../assets/icons/calendar.png")}
-              style={{ width: 20, height: 20, marginRight: "5%" }}
+            <MaterialCommunityIcons
+              name='calendar-month-outline'
+              size={26}
+              color={"grey"}
             />
-            <Text>{displayDate(taskdata.due_date)}</Text>
+            <Text style={{margin: "5%"}}>{displayDate(taskdata.due_date)}</Text>
           </View>
           <View style={styles.detailsContainer}>
             <Text>{taskdata.details}</Text>
@@ -246,19 +249,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   titleContainer: {
-    flex: 2,
+    flex: 1.5,
     width: "80%",
     justifyContent: "center",
   },
   dateContainer: {
     flex: 1,
-    width: "80%",
     flexDirection: "row",
-    alignContent: "center",
+    alignItems: "center",
 
   },
   detailsContainer: {
-    flex: 4,
+    flex: 3,
     width: "80%",
   },
   actionsContainer: {

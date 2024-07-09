@@ -20,6 +20,7 @@ import { Searchbar } from "react-native-paper";
 import { useState, useEffect, useLayoutEffect } from "react";
 import { Snackbar } from "react-native-paper";
 import { useAuth } from '../contextProviders/authContext';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 
 export default function FindFriends({ navigation, route }) {
@@ -190,9 +191,10 @@ export default function FindFriends({ navigation, route }) {
                     onPress={() => {
                       handleSendRequest(item.user_id);
                     }}>
-                    <Image
-                      style={{ width: 30, height: 30 }}
-                      source={require("../assets/icons/add.png")}
+                    <MaterialCommunityIcons
+                      name='plus-circle'
+                      size={34}
+                      color={"#4F83A5"}
                     />
                   </Pressable>
                 </DataTable.Cell>
@@ -257,7 +259,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   row: {
-    height: 50,
+    height: 55,
     width: "100%",
     borderBottomWidth: 0,
   },

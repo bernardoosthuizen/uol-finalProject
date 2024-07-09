@@ -9,10 +9,8 @@ import "react-native-gesture-handler";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import {
-  Image
-} from "react-native";
 import { useEffect, useState } from 'react';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 // import screens
 import Login from './screens/login';
@@ -75,15 +73,15 @@ function LoggedInRoutes() {
         name='Home'
         component={Home}
         options={{
-          tabBarActiveBackgroundColor: "#bbe1fa",
           tabBarShowLabel: false,
           unmountOnBlur: true,
           headerShown: false,
           tabBarIcon: ({ size, focused, color }) => {
             return (
-              <Image
-                style={{ width: size, height: size }}
-                source={require("./assets/icons/home.png")}
+              <MaterialCommunityIcons
+                name='home-outline'
+                size={34}
+                color={focused ? 'black':'grey'}
               />
             );
           },
@@ -93,14 +91,14 @@ function LoggedInRoutes() {
         name='Tasks'
         component={Tasks}
         options={{
-          tabBarActiveBackgroundColor: "#bbe1fa",
           tabBarShowLabel: false,
           headerShown: false,
           tabBarIcon: ({ size, focused, color }) => {
             return (
-              <Image
-                style={{ width: size * 1.4, height: size * 1.4 }}
-                source={require("./assets/icons/tasks.png")}
+              <MaterialCommunityIcons
+                name='format-list-checkbox'
+                size={34}
+                color={focused ? "black" : "grey"}
               />
             );
           },
@@ -111,16 +109,16 @@ function LoggedInRoutes() {
         component={AddTask}
         initialParams={{ taskdata: null }}
         options={{
-          tabBarActiveBackgroundColor: "#f0f0f0",
           tabBarShowLabel: false,
           unmountOnBlur: true,
           headerShown: false,
           tabBarLabel: () => null,
           tabBarIcon: ({ size, focused, color }) => {
             return (
-              <Image
-                style={{ width: size * 1.8, height: size * 1.8 }}
-                source={require("./assets/icons/add-task.png")}
+              <MaterialCommunityIcons
+                name='plus-circle-outline'
+                size={focused ? 52 : 50}
+                color='#4F83A5'
               />
             );
           },
@@ -130,15 +128,15 @@ function LoggedInRoutes() {
         name='Leaderboard'
         component={Leaderboard}
         options={{
-          tabBarActiveBackgroundColor: "#bbe1fa",
           tabBarShowLabel: false,
           unmountOnBlur: true,
           headerShown: false,
           tabBarIcon: ({ size, focused, color }) => {
             return (
-              <Image
-                style={{ width: size, height: size }}
-                source={require("./assets/icons/leaderboard.png")}
+              <MaterialCommunityIcons
+                name='trophy-outline'
+                size={34}
+                color={focused ? "black" : "grey"}
               />
             );
           },
@@ -147,16 +145,16 @@ function LoggedInRoutes() {
       <Tab.Screen
         name='Profile'
         options={{
-          tabBarActiveBackgroundColor: "#bbe1fa",
           tabBarShowLabel: false,
           unmountOnBlur: true,
           headerShown: false,
           tabBarBadge: friendRequests.length > 0 ? friendRequests.length : null,
           tabBarIcon: ({ size, focused, color }) => {
             return (
-              <Image
-                style={{ width: size, height: size }}
-                source={require("./assets/icons/profile.png")}
+              <MaterialCommunityIcons
+                name='account-outline'
+                size={34}
+                color={focused ? "black" : "grey"}
               />
             );
           },

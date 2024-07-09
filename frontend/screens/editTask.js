@@ -60,6 +60,7 @@ export default function EditTask({route, navigation}) {
 
     const saveTask = async () => {
       setLoading(true);
+
         fetch(
           `${apiUrl}/api/task/${taskId}/user/${currentUser.uid}`,
           {
@@ -83,7 +84,6 @@ export default function EditTask({route, navigation}) {
             return response.json();
           })
           .then((data) => {
-            console.log(data);
             navigation.navigate("Tasks");
           })
           .catch((error) => {

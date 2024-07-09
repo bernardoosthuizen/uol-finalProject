@@ -12,13 +12,13 @@ import {
     SafeAreaView,
     Pressable,
     ScrollView,
-    Image,
 } from "react-native";
 import { Dimensions  } from "react-native";
 import { DataTable } from "react-native-paper";
 import { useEffect, useState } from 'react';
 import { useAuth } from '../contextProviders/authContext';
 import { Snackbar } from "react-native-paper";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 
 export default function FriendRequest({ route, navigation }) {
@@ -49,7 +49,6 @@ export default function FriendRequest({ route, navigation }) {
       })
       .then((data) => {
         setRequestList(data);
-        console.log(data);
       })
       .catch((error) => {
         console.error("Failed to get friend requests", error.message);
@@ -93,7 +92,6 @@ export default function FriendRequest({ route, navigation }) {
   };
 
   handleReject = (friendId) => {
-    console.log("Reject", friendId);
     fetch(
       `${apiUrl}/api/reject-friend-request/${currentUser.uid}/${friendId}`,
       {
@@ -159,9 +157,10 @@ export default function FriendRequest({ route, navigation }) {
                     onPress={() => {
                       handleAccept(item.user_id);
                     }}>
-                    <Image
-                      style={{ width: 30, height: 30 }}
-                      source={require("../assets/icons/accept.png")}
+                    <MaterialCommunityIcons
+                      name='check-circle-outline'
+                      size={34}
+                      color={"green"}
                     />
                   </Pressable>
                 </DataTable.Cell>
@@ -174,9 +173,10 @@ export default function FriendRequest({ route, navigation }) {
                     onPress={() => {
                       handleReject(item.user_id);
                     }}>
-                    <Image
-                      style={{ width: 30, height: 30 }}
-                      source={require("../assets/icons/reject.png")}
+                    <MaterialCommunityIcons
+                      name='close-octagon'
+                      size={34}
+                      color={"firebrick"}
                     />
                   </Pressable>
                 </DataTable.Cell>
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   row: {
-    height: 50,
+    height: 55,
     width: "100%",
     borderBottomWidth: 0,
   },
