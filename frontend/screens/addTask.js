@@ -21,6 +21,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { useAuth } from '../contextProviders/authContext';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Snackbar } from "react-native-paper";
+import LoadingOverlay from "../components/loadingOverlay";
 
 export default function AddTask({navigation}) {
   const { currentUser } = useAuth();
@@ -45,6 +46,8 @@ export default function AddTask({navigation}) {
     { label: "Medium", value: "medium" },
     { label: "Low", value: "low" },
   ]);
+  
+  const [isLoading, setLoading] = useState(false);
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
@@ -58,6 +61,7 @@ export default function AddTask({navigation}) {
   };
 
   const handleTaskSave = () => {
+    setLoading(true);
     fetch("http://localhost:3000/new-task", {
       method: "POST",
       headers: {
@@ -186,6 +190,7 @@ export default function AddTask({navigation}) {
           }}>
           <Text style={{ color: "white" }}>{snackbarMessage}</Text>
         </Snackbar>
+        <LoadingOverlay visible={isLoading} />
         <StatusBar style='auto' />
       </SafeAreaView>
     </TouchableWithoutFeedback>

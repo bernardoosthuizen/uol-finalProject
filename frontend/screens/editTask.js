@@ -20,6 +20,7 @@ import { useState } from 'react';
 import DropDownPicker from "react-native-dropdown-picker";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import {useAuth} from '../contextProviders/authContext';
+import LoadingOverlay from "../components/loadingOverlay";
 
 export default function EditTask({route, navigation}) {
     const { taskId, taskdata } = route.params;
@@ -41,6 +42,7 @@ export default function EditTask({route, navigation}) {
 
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
+    const [isLoading, setLoading] = useState(false);
 
     const [priorityListOpen, setPriorityListOpen] = useState(false);
     const [priorities, setPriorities] = useState([
@@ -57,6 +59,7 @@ export default function EditTask({route, navigation}) {
     const { width, height } = Dimensions.get("window");
 
     const saveTask = async () => {
+      setLoading(true);
         fetch(`http://localhost:3000/task/${currentUser.uid}/${taskId}`, {
           method: "PUT",
           headers: {
@@ -163,7 +166,7 @@ export default function EditTask({route, navigation}) {
               <Text style={{ color: "white" }}>Save</Text>
             </Pressable>
           </View>
-
+          <LoadingOverlay visible={isLoading} />
           <StatusBar style='auto' />
         </SafeAreaView>
       </TouchableWithoutFeedback>

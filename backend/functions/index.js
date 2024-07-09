@@ -654,6 +654,7 @@ app.put("/complete-task/:userId/:taskId", apiKeyMiddleware, (req, res) => {
           let newScore = 0;
           let newWeekStreak = userData.task_week_streak || 0;
           let newDayStreak = userData.task_day_streak || 0;
+          let daysSinceLastTask = 0;
 
           // Update daily streak
           newDayStreak += 1;
@@ -678,15 +679,23 @@ app.put("/complete-task/:userId/:taskId", apiKeyMiddleware, (req, res) => {
             default:
               break;
           }
+
+          if (userData.last_task_completed_date) {
+            const timeSinceLastTask =
+              new Date() - new Date(userData.last_task_completed_date);
+            daysSinceLastTask = Math.round(
+              timeSinceLastTask / (1000 * 3600 * 24)
+            );
+          }
           
 
           // Daily Streak Bonus
-          if (userData.task_day_streak > 0) {
+          if (userData.task_day_streak > 0 && daysSinceLastTask === 1) {
             newScore += 20 * userData.task_day_streak;
           }
 
           // Weekly Streak Bonus
-          if (userData.task_week_streak > 0) {
+          if (userData.task_week_streak > 0 && daysSinceLastTask === 1) {
             newScore += 50 * userData.task_week_streak;
           }
 
@@ -707,18 +716,11 @@ app.put("/complete-task/:userId/:taskId", apiKeyMiddleware, (req, res) => {
           
           // Penalise for inconsistent task completion
           if (userData.last_task_completed_date) {
-            const timeSinceLastTask =
-              new Date() - new Date(userData.last_task_completed_date);
-            let differenceInDays = Math.round(
-              timeSinceLastTask / (1000 * 3600 * 24)
-            );
-
-
-            if (differenceInDays > 5) {
+            if (daysSinceLastTask > 5) {
               newScore -= 50;
-            } else if (differenceInDays > 0) {
+            } else if (daysSinceLastTask > 1) {
               newScore -= 25;
-            } else if (differenceInDays > 10) {
+            } else if (daysSinceLastTask > 10) {
               newScore -= 100;
             }
           }
@@ -739,12 +741,13 @@ app.put("/complete-task/:userId/:taskId", apiKeyMiddleware, (req, res) => {
                 .update({ status: "completed" })
                 .then(() => {
                   // Update user score in Neo4j
+                  const s = newScore + userData.score;
                   session
                     .run(
                       `MATCH (u:User {user_id: $userId})
-                      SET u.score = $newScore
+                      SET u.score = $s
                       RETURN u`,
-                      { userId, newScore }
+                      { userId, s }
                     )
                     .then(() => {
                       return res.status(200).send({ message: `Task ${taskId} completed.` });

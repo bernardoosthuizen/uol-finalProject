@@ -16,10 +16,11 @@ import { HeaderBackButton } from "@react-navigation/elements";
 export default function Task({route, navigation}) {
   const [taskdata, setTaskData] = useState();
   const [isLoading, setIsLoading] = useState(true);
-  const [loadingOverlayVisible, setLoadingOverlayVisible] = useState(false);
+  const [loadingOverlayVisible, setLoadingOverlayVisible] = useState(true);
 
   const { currentUser } = useAuth();
   const { taskId, goBack } = route.params;
+
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
@@ -64,6 +65,7 @@ export default function Task({route, navigation}) {
       .then((data) => {
         setTaskData(data);
         setIsLoading(false);
+        setLoadingOverlayVisible(false);
       })
       .catch((error) => {
         setSnackBarVisible(true);
