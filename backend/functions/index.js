@@ -103,7 +103,7 @@ app.get("/api/dashboard/:userId", apiKeyMiddleware, async (req, res) => {
         return friends;
       });
 
-      // Wait for both promises to resolve
+    // Wait for both promises to resolve
     const [tasks, friends] = await Promise.all([tasksPromise, friendsPromise]);
 
     // Construct response with both tasks and friends data
@@ -789,10 +789,14 @@ app.delete(
 // exports.app = onRequest(app);
 
 
+
 // Comment out before deploying to firebase
 // for local testing only
 // -----------------------------------------
+
 const port = 3000;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Social Tasker Backend listening on port ${port}`);
 });
+
+module.exports = { app, server };
