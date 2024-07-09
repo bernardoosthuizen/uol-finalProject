@@ -17,15 +17,18 @@ export default function TaskListComponent({ tasks, header, navigation }) {
   const [sortDateDirection, setSortDateDirection] = useState("descending");
   const [sortPriorityDirection, setSortPriorityDirection] = useState(null);
 
+  let sortedTasks = tasks;
+
   useEffect(() => {
+    
     if (!header) {
-      tasks = tasks?.reverse();
+      sortedTasks = sortedTasks?.reverse();
     }  
     if (sortDateDirection === "descending") {
-      tasks = tasks?.reverse(); // Sort the copy
+      sortedTasks = sortedTasks?.reverse(); // Sort the copy
     }
     if (sortDateDirection === "ascending") {
-      tasks = tasks?.reverse(); // Sort the copy
+      sortedTasks = sortedTasks?.reverse(); // Sort the copy
     }
     // Add any other sorting logic here
   }, [tasks, sortDateDirection]); // Re-run this effect if tasks or sortPriorityDirection changes
