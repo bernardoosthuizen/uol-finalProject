@@ -149,6 +149,7 @@ function LoggedInRoutes() {
         options={{
           tabBarActiveBackgroundColor: "#bbe1fa",
           tabBarShowLabel: false,
+          unmountOnBlur: true,
           headerShown: false,
           tabBarBadge: friendRequests.length > 0 ? friendRequests.length : null,
           tabBarIcon: ({ size, focused, color }) => {

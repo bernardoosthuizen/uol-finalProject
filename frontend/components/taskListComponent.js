@@ -18,6 +18,9 @@ export default function TaskListComponent({ tasks, header, navigation }) {
   const [sortPriorityDirection, setSortPriorityDirection] = useState(null);
 
   useEffect(() => {
+    if (!header) {
+      tasks = tasks?.reverse();
+    }  
     if (sortDateDirection === "descending") {
       tasks = tasks?.reverse(); // Sort the copy
     }
@@ -36,7 +39,7 @@ export default function TaskListComponent({ tasks, header, navigation }) {
     if (date < Date.parse(today)) {
       return "Overdue";
     }
-    if (date == Date.parse(today) + 86400000) {
+    if (date >= Date.parse(today) + 86400 * 1000 && date < Date.parse(today) + 172800 * 1000){
       return "Tomorrow";
     }
     // if its within 7 days

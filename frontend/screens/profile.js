@@ -18,6 +18,7 @@ import { Dimensions, Alert } from "react-native";
 import { useAuth } from '../contextProviders/authContext';
 import { Snackbar } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
+import LoadingOverlay from "../components/loadingOverlay";
 
 
 export default function Profile({ friendRequests }) {
@@ -220,6 +221,7 @@ export default function Profile({ friendRequests }) {
         }}>
         <Text style={{ color: "white" }}>{snackbarMessage}</Text>
       </Snackbar>
+      <LoadingOverlay visible={isLoading} />
       <StatusBar style='auto' />
     </SafeAreaView>
   );

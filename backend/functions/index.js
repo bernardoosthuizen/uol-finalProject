@@ -8,8 +8,7 @@ const express = require("express");
 const { param, validationResult } = require("express-validator");
 const bodyParser = require("body-parser");
 const { initializeApp } = require("firebase-admin/app");
-const { getDatabase } = require("firebase-admin/database");
-const { userValidator, idValidator, taskValidator, apiKeyMiddleware } = require("./validators");
+const { userValidator, taskValidator, apiKeyMiddleware } = require("./validators");
 const neo4j = require("neo4j-driver");
 const { rateLimit } = require("express-rate-limit");
 
@@ -21,6 +20,7 @@ require("dotenv").config();
 const admin = require("firebase-admin");
 const serviceAccount = require("../../uol-fp-firebase-adminsdk-h1olz-34e8ea07cc.json");
 const { create } = require('ts-node');
+const { user } = require('firebase-functions/v1/auth');
 // -------------------------------------------------------
 
 // Initialize Firebase Admin
@@ -80,6 +80,7 @@ app.get("/dashboard/:userId", apiKeyMiddleware, (req, res) => {
       const userData = doc.data();
       // Get tasks from firestore
       db.collection(`tasks-${userId}`)
+        .where("status", "!=", "completed")
         .orderBy("due_date")
         .limit(5)
         .get()
@@ -132,7 +133,7 @@ app.post("/new-user",apiKeyMiddleware, userValidator, (req, res) => {
 
   // Extract user data from request body
   const {user_id, name, email} = req.body;
-  const userData = {user_id, name, email};
+  const userData = {user_id, name, email, score: null, last_task_completed_date: null, task_day_streak: null, task_week_streak: null};
 
   // Add to firestore database
   db.collection("users")
@@ -211,7 +212,9 @@ app.delete("/user/:userId", apiKeyMiddleware, (req, res) => {
 
   // Delete user from Neo4j database
   session
-    .run("MATCH (u:User {user_id: $id}) DELETE u", { id: userId })
+    .run("MATCH (u:User {user_id: $id}) DETACH DELETE u", {
+      id: userId,
+    })
     .then(() => {
       // Delete user from firestore database
       db.collection("users")
@@ -235,12 +238,12 @@ app.delete("/user/:userId", apiKeyMiddleware, (req, res) => {
             .then(() => {
               return res.status(204).send({ message: "User deleted" });
             });
-        }) 
+        });
     })
     .catch((error) => {
       // Handle error
       const { code, message } = error;
-      res.status(code).send({ error: message });
+      res.status(500).send({ error: message });
     });
 });
 
@@ -531,6 +534,7 @@ app.get(
 
     // Get tasks from firestore database by user id
     db.collection(`tasks-${userId}`)
+      .where("status", "!=", "completed")
       .orderBy("due_date")
       .get()
       .then((snapshot) => {
@@ -546,7 +550,7 @@ app.get(
       .catch((error) => {
         // Handle error
         const { code, message } = error;
-        return res.status(code).send({ error: message });
+        return res.status(500).send({ error: message });
       });
   }
 );
@@ -614,6 +618,151 @@ app.put("/task/:userId/:taskId",apiKeyMiddleware, taskValidator, (req, res) => {
     });
 });
 // -------------------------------------------------------
+
+// Complete task
+app.put("/complete-task/:userId/:taskId", apiKeyMiddleware, (req, res) => {
+  const { userId, taskId } = req.params;
+
+  let userData;
+  let taskData;
+  let newScore = 0;
+
+  // Get user data from firestore
+  db.collection("users")
+    .doc(userId)
+    .get()
+    .then((doc) => {
+      if (!doc.exists) {
+        return res.status(404).send({ message: "User not found" });
+      }
+      userData = doc.data();
+      console.log(newScore)
+      // console.log("User data", userData)
+    })
+    .then(()=>{
+      // Get task data from firestore
+      db.collection(`tasks-${userId}`)
+        .doc(taskId)
+        .get()
+        .then((doc) => {
+          if (!doc.exists) {
+            return res.status(404).send({ message: "Task not found" });
+          }
+          taskData = doc.data();
+          
+        })
+        .then(() => {
+          // Calculate new Score
+
+          // Set new variables
+          let newScore = 0;
+          let newWeekStreak = userData.task_week_streak || 0;
+          let newDayStreak = userData.task_day_streak || 0;
+
+          // Update daily streak
+          newDayStreak += 1;
+
+          // Update weekly streak
+          if (newDayStreak % 7 === 0) {
+            newDayStreak = 0;
+            newWeekStreak += 1;
+          }
+
+          // Task priority bonus
+          switch (taskData.priority) {
+            case "high":
+              newScore += 25;
+              break;
+            case "medium":
+              newScore += 15;
+              break;
+            case "low":
+              newScore += 5;
+              break;
+            default:
+              break;
+          }
+          
+
+          // Daily Streak Bonus
+          if (userData.task_day_streak > 0) {
+            newScore += 20 * userData.task_day_streak;
+          }
+
+          // Weekly Streak Bonus
+          if (userData.task_week_streak > 0) {
+            newScore += 50 * userData.task_week_streak;
+          }
+
+          // Task on time completed bonus
+          const dueDate = new Date(taskData.due_date);
+          const completedDate = new Date();
+          const timeDifference = dueDate - completedDate;
+          if (timeDifference > 0) {
+            newScore += 50;
+          }
+
+          // Reward user for planning tasks ahead
+          const createdDate = new Date(taskData.created_at);
+          const planningDifference = (dueDate - createdDate) / (1000 * 60 * 60 * 24);
+          newScore += 2 * planningDifference;
+
+          newScore = Math.round(newScore);
+          
+          // Penalise for inconsistent task completion
+          if (userData.last_task_completed_date) {
+            const timeSinceLastTask =
+              new Date() - new Date(userData.last_task_completed_date);
+            let differenceInDays = Math.round(
+              timeSinceLastTask / (1000 * 3600 * 24)
+            );
+
+
+            if (differenceInDays > 5) {
+              newScore -= 50;
+            } else if (differenceInDays > 0) {
+              newScore -= 25;
+            } 
+          }
+
+          // Update user data in firestore
+          db.collection("users")
+            .doc(userId)
+            .update({
+              score: newScore,
+              last_task_completed_date: new Date().toISOString(),
+              task_day_streak: newDayStreak,
+              task_week_streak: newWeekStreak,
+            })
+            .then(() => {
+              // Update task status to completed in firestore database by task id
+              db.collection(`tasks-${userId}`)
+                .doc(taskId)
+                .update({ status: "completed" })
+                .then(() => {
+                  // Update user score in Neo4j
+                  session
+                    .run(
+                      `MATCH (u:User {user_id: $userId})
+                      SET u.score = $newScore
+                      RETURN u`,
+                      { userId, newScore }
+                    )
+                    .then(() => {
+                      return res.status(200).send({ message: `Task ${taskId} completed.` });
+                    });
+                })
+                .catch((error) => {
+                  // Handle error
+                  const { code, message } = error;
+                  return res.status(code).send({ error: message });
+                });
+            });
+
+        })
+
+    })
+});
 
 // Delete task
 app.delete(

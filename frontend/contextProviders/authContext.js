@@ -55,7 +55,6 @@ export const AuthProvider = ({ children }) => {
 
   // Delete account function
   const deleteAccount = (password) => {
-    setLoading(true);
     const auth = getAuth();
     const user = auth.currentUser;
 

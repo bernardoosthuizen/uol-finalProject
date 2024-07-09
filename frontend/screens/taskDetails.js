@@ -11,10 +11,12 @@ import { useAuth } from '../contextProviders/authContext';
 import LoadingOverlay from "../components/loadingOverlay";
 import { Snackbar } from "react-native-paper";
 import { HeaderBackButton } from "@react-navigation/elements";
+// import { handlePress } from 'react-native-paper/src/components/RadioButton/utils';
 
 export default function Task({route, navigation}) {
   const [taskdata, setTaskData] = useState();
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingOverlayVisible, setLoadingOverlayVisible] = useState(false);
 
   const { currentUser } = useAuth();
   const { taskId, goBack } = route.params;
@@ -49,7 +51,6 @@ export default function Task({route, navigation}) {
 
   // Get the task data from the server
   useEffect(() => {
-    setIsLoading(true);
     fetch(`http://localhost:3000/task/${currentUser.uid}/${taskId}`, {
       method: "GET",
       headers: {
@@ -79,10 +80,35 @@ export default function Task({route, navigation}) {
     return d.toDateString();
   };
 
-  
+  handleTaskComplete = () => {
+    setLoadingOverlayVisible(true);
+    fetch(`http://localhost:3000/complete-task/${currentUser.uid}/${taskId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
+      },
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          setLoadingOverlayVisible(false);
+          setSnackBarVisible(true);
+          setSnackbarMessage("Task completed successfully");
+          // Navigate back
+          navigation.navigate("LoggedInRoutes", {screen: "Tasks"});
+        } 
+      })
+      .catch((error) => {
+        setSnackBarVisible(true);
+        setSnackbarMessage("Failed to complete task", error.message);
+        navigation.navigate("ProtectedRoutes");
+        console.log(error);
+      
+    })
+  }
 
   const handleDeleteTask = () => {
-    console.log("Deleting task")
+    setLoadingOverlayVisible(true);
     fetch(`http://localhost:3000/task/${currentUser.uid}/${taskId}`, {
       method: "DELETE",
       headers: {
@@ -92,6 +118,7 @@ export default function Task({route, navigation}) {
     })
       .then((response) => {
         if (response.status === 204) {
+          setLoadingOverlayVisible(false);
           setSnackBarVisible(true);
           setSnackbarMessage("Task deleted successfully");
           // Navigate back
@@ -147,14 +174,17 @@ export default function Task({route, navigation}) {
                 styles.button,
               ]}
               onPress={() => {
-                alert("press");
+                handleTaskComplete();
               }}>
               <Text style={{ color: "white" }}>Complete</Text>
             </Pressable>
             <Pressable
               style={{ flex: 1, alignItems: "center", marginTop: "5%" }}
               onPress={() => {
-                navigation.navigate("Edit Task", { taskdata: taskdata, taskId: taskId});
+                navigation.navigate("Edit Task", {
+                  taskdata: taskdata,
+                  taskId: taskId,
+                });
               }}>
               <Text style={{ color: "black", textDecorationLine: "underline" }}>
                 Edit Task
@@ -171,9 +201,12 @@ export default function Task({route, navigation}) {
                       text: "NO",
                       style: "cancel",
                     },
-                    { text: "YES", onPress: () => {
-                      handleDeleteTask();
-                    } },
+                    {
+                      text: "YES",
+                      onPress: () => {
+                        handleDeleteTask();
+                      },
+                    },
                   ]
                 );
               }}>
@@ -198,6 +231,7 @@ export default function Task({route, navigation}) {
         }}>
         <Text style={{ color: "white" }}>{snackbarMessage}</Text>
       </Snackbar>
+      <LoadingOverlay visible={loadingOverlayVisible} />
       <StatusBar style='auto' />
     </SafeAreaView>
   );

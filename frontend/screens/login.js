@@ -71,23 +71,25 @@ export default function Login({ navigation }) {
       <View style={styles.formContainer}>
         <TextInput
           mode='outlined'
-          style={[styles.input, { width: width * 0.7 }]}
+          style={[styles.input, { width: width * 0.8 }]}
           onChangeText={onChangeEmail}
           value={email}
           placeholder='Email'
+          placeholderTextColor='lightgrey'
           autoComplete='email'
         />
         <TextInput
-          style={[styles.input, { width: width * 0.7 }]}
+          style={[styles.input, { width: width * 0.8 }]}
           onChangeText={onChangePassword}
           value={password}
           secureTextEntry={true}
           placeholder='Password'
+          placeholderTextColor='lightgrey'
           autoComplete='password'
         />
         <Pressable
           style={({ pressed }) => [
-            { opacity: pressed ? 0.5 : 1.0, width: width * 0.7 },
+            { opacity: pressed ? 0.5 : 1.0, width: width * 0.8 },
             styles.button,
           ]}
           onPress={() => {
@@ -153,8 +155,9 @@ const styles = StyleSheet.create({
   button: {
     alignItems: "center",
     backgroundColor: "#4F83A5",
-    height: 45,
-    padding: 15,
+    justifyContent: "center",
+    height: 50,
+    padding: 10,
     margin: 12,
     borderRadius: 8,
   },
