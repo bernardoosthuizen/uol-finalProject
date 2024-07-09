@@ -16,7 +16,7 @@ import {
   Pressable,
 } from "react-native";
 import { Dimensions } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {auth} from '../services/firebaseConfig';
 import { createUserWithEmailAndPassword} from 'firebase/auth';
 import { Snackbar } from "react-native-paper";
@@ -32,6 +32,9 @@ export default function Login({ navigation }) {
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
 
+  const [errors, setErrors] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
+
   const [isLoading, setLoading] = useState(false);
 
   const { apiUrl } = useAuth();
@@ -41,9 +44,55 @@ export default function Login({ navigation }) {
   const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
   const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
 
+  useEffect(() => {
+    // Trigger form validation when task data changes
+    validateSignupData();
+  }, [email, password, name]);
+
+  const validateSignupData = () => {
+    let errors = {};
+
+    // Validate email field
+    if (!email) {
+      errors.email = "Email is required.";
+    }
+
+    // Validate password field
+    if (!password) {
+      errors.password = "Password is required.";
+    }
+    if (password.length < 6) {
+      errors.password = "Password must be at least 6 characters.";
+    }
+
+    // Validate name field
+    if (!name) {
+      errors.name = "Name is required.";
+    }
+
+    // Set the errors and update form validity
+    setErrors(errors);
+    setIsFormValid(Object.keys(errors).length === 0);
+  };
+
   // Sign up function
   const signUp = () => {
     setLoading(true);
+    if (!isFormValid) {
+      if (Object.keys(errors).length == 1) {
+        const key = Object.keys(errors)[0];
+        const errorText = errors[key];
+        setLoading(false);
+        setSnackBarVisible(true);
+        setSnackbarMessage(errorText);
+        return;
+      } else {
+        setLoading(false);
+        setSnackBarVisible(true);
+        setSnackbarMessage("Please fill out all required fields");
+        return;
+      }
+    }
     // Sign up with email and password from Firebase
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {

@@ -16,7 +16,7 @@ import {
   Keyboard,
 } from "react-native";
 import { TextInput } from "react-native-paper";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DropDownPicker from "react-native-dropdown-picker";
 import { useAuth } from '../contextProviders/authContext';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -49,6 +49,10 @@ export default function AddTask({navigation}) {
   
   const [isLoading, setLoading] = useState(false);
 
+  const [errors, setErrors] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false); 
+  
+
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
@@ -60,8 +64,62 @@ export default function AddTask({navigation}) {
     setDatePickerVisibility(false);
   };
 
+  const validateTaskData = () => {
+    let errors = {};
+
+    // Validate title field
+    if (!taskTitle) {
+      errors.name = "Title is required.";
+    }
+    // Validate description field
+    if (!taskDescription) {
+      errors.description = "Description is required.";
+    }
+    // Validate details field
+    if (!taskDetails) {
+      errors.details = "Details are required.";
+    }
+    // Validate priority field
+    if (!taskPriority) {
+      errors.priority = "Priority is required.";
+    }
+    // Validate due date field
+    if (!taskDue) {
+      errors.due_date = "Due date is required.";
+    }
+
+    // Set the errors and update form validity
+    setErrors(errors);
+    setIsFormValid(Object.keys(errors).length === 0);
+  }; 
+
+  useEffect(() => {
+    // Trigger form validation when task data changes
+    validateTaskData();
+  }, [taskTitle, taskDescription, taskDetails, taskPriority, taskDue]); 
+
+
   const handleTaskSave = () => {
     setLoading(true);
+    if (!isFormValid) {
+      console.log(taskDescription)
+      console.log(errors);
+      if (Object.keys(errors).length == 1){
+        const key = Object.keys(errors)[0];
+        const errorText = errors[key];
+        setLoading(false);
+        setSnackBarVisible(true);
+        setSnackbarMessage(errorText);
+        return;
+      } else {
+        setLoading(false);
+        setSnackBarVisible(true);
+        setSnackbarMessage("Please fill out all required fields");
+        return;
+      }
+      
+    }
+
     fetch(`${apiUrl}/api/new-task`, {
       method: "POST",
       headers: {

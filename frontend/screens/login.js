@@ -20,37 +20,80 @@ export default function Login({ navigation }) {
 
   const { isConnected } = useConnectivity();
 
+  const [errors, setErrors] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
+
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
   const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
-
-  useEffect(() => {
-    if (!isConnected) {
-      setSnackBarVisible(true);
-      setSnackbarMessage("No internet connection.");
-    }
-  },[]);
-  
 
   // State for email and password
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
   const [isLoading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (!isConnected) {
+      setSnackBarVisible(true);
+      setSnackbarMessage("No internet connection.");
+    }
+  }, []);
+
+  useEffect(() => {
+    // Trigger form validation when task data changes
+    validateLoginData();
+  }, [email, password]);
+
+  const validateLoginData = () => {
+    let errors = {};
+
+    // Validate email field
+    if (!email) {
+      errors.email = "Email is required.";
+    }
+
+    // Validate password field
+    if (!password) {
+      errors.password = "Password is required.";
+    }
+
+    // Set the errors and update form validity
+    setErrors(errors);
+    setIsFormValid(Object.keys(errors).length === 0);
+  };
+
   // Sign in function
   const signIn = () => {
     setLoading(true);
+    if (!isFormValid) {
+      if (Object.keys(errors).length == 1) {
+        const key = Object.keys(errors)[0];
+        const errorText = errors[key];
+        setLoading(false);
+        setSnackBarVisible(true);
+        setSnackbarMessage(errorText);
+        return;
+      } else {
+        setLoading(false);
+        setSnackBarVisible(true);
+        setSnackbarMessage("Please fill out all required fields");
+        return;
+      }
+    }
     // Sign in with email and password from Firebase
     signInWithEmailAndPassword(auth, email, password).catch((error) => {
       setLoading(false);
       navigation.navigate("Login");
-      const errorCode = error.code;
       const errorMessage = error.message;
-      console.log(errorMessage);
       setSnackBarVisible(true);
-      setSnackbarMessage("Error logging in.", error);
-      // ..
+      if (errorMessage == "Firebase: Error (auth/invalid-email).") {
+        setSnackbarMessage("Wrong email. ");
+      } else if (errorMessage == "Firebase: Error (auth/invalid-credential).") {
+        setSnackbarMessage("Incorrect password.");
+      } else {
+        setSnackbarMessage(`Error logging in. ${errorMessage}`);
+      }
     });
   };
 

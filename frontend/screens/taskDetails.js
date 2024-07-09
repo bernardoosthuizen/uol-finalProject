@@ -12,7 +12,6 @@ import LoadingOverlay from "../components/loadingOverlay";
 import { Snackbar } from "react-native-paper";
 import { HeaderBackButton } from "@react-navigation/elements";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-// import { handlePress } from 'react-native-paper/src/components/RadioButton/utils';
 
 export default function Task({route, navigation}) {
   const [taskdata, setTaskData] = useState();
@@ -112,7 +111,7 @@ export default function Task({route, navigation}) {
 
   const handleDeleteTask = () => {
     setLoadingOverlayVisible(true);
-    fetch(`${apiUrl}/api/user/${currentUser.uid}/complete-task/${taskId}`, {
+    fetch(`${apiUrl}/api/user/${currentUser.uid}/task/${taskId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

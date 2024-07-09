@@ -16,7 +16,6 @@ export default function TaskListComponent({ tasks, header, navigation }) {
   const { width } = Dimensions.get("window");
 
   const [sortDateDirection, setSortDateDirection] = useState("descending");
-  const [sortPriorityDirection, setSortPriorityDirection] = useState(null);
 
   let sortedTasks = tasks;
 
@@ -99,16 +98,8 @@ export default function TaskListComponent({ tasks, header, navigation }) {
       {header ? (
         <DataTable.Header>
           <Pressable
-            style={{ flex: 2 }}
-            onPress={() => {
-              setSortPriorityDirection(
-                sortPriorityDirection === "ascending"
-                  ? "descending"
-                  : "ascending"
-              );
-              setSortDateDirection(null);
-            }}>
-            <DataTable.Title sortDirection={sortPriorityDirection}>
+            style={{ flex: 2 }}>
+            <DataTable.Title>
               Priority
             </DataTable.Title>
           </Pressable>
@@ -119,7 +110,6 @@ export default function TaskListComponent({ tasks, header, navigation }) {
               setSortDateDirection(
                 sortDateDirection === "ascending" ? "descending" : "ascending"
               );
-              setSortPriorityDirection(null);
             }}>
             <DataTable.Title numeric sortDirection={sortDateDirection}>
               Due
