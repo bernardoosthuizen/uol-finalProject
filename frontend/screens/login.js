@@ -6,7 +6,17 @@ sees when they open the app.
 
 // Import necessary modules
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, SafeAreaView, Image, TextInput, Pressable } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  SafeAreaView,
+  Image,
+  TextInput,
+  Pressable,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from "react-native";
 import { Dimensions } from "react-native";
 import { useState, useEffect } from 'react';
 import {auth} from '../services/firebaseConfig';
@@ -100,74 +110,79 @@ export default function Login({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.logoContainer}>
-        <Image
-          source={require("../assets/logo/logoIcon.png")}
-          style={{ width: width * 0.5, flex: 1 }}
-          alt='Social Tasker logo icon'
-        />
-        <Image
-          source={require("../assets/logo/logoText.png")}
-          style={{ width: width * 0.5, resizeMode: "contain", flex: 1 }}
-          alt='Social Tasker logo text'
-        />
-      </View>
-      <View style={styles.formContainer}>
-        <TextInput
-          mode='outlined'
-          style={[styles.input, { width: width * 0.8 }]}
-          onChangeText={onChangeEmail}
-          value={email}
-          placeholder='Email'
-          placeholderTextColor='lightgrey'
-          autoComplete='email'
-        />
-        <TextInput
-          style={[styles.input, { width: width * 0.8 }]}
-          onChangeText={onChangePassword}
-          value={password}
-          secureTextEntry={true}
-          placeholder='Password'
-          placeholderTextColor='lightgrey'
-          autoComplete='password'
-        />
-        <Pressable
-          style={({ pressed }) => [
-            { opacity: pressed ? 0.5 : 1.0, width: width * 0.8 },
-            styles.button,
-          ]}
-          onPress={() => {
-            signIn();
-          }}>
-          <Text style={{ color: "white" }}>Sign In</Text>
-        </Pressable>
-      </View>
-      <Text style={{ flex: 1 }}>
-        Don't have an account?{" "}
-        <Text
-          style={{ textDecorationLine: "underline" }}
-          onPress={() => navigation.navigate("SignUp")}>
-          Sign Up here.
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../assets/logo/logoIcon.png")}
+            style={{ width: width * 0.5, flex: 1 }}
+            alt='Social Tasker logo icon'
+          />
+          <Image
+            source={require("../assets/logo/logoText.png")}
+            style={{ width: width * 0.5, resizeMode: "contain", flex: 1 }}
+            alt='Social Tasker logo text'
+          />
+        </View>
+        <View style={styles.formContainer}>
+          <TextInput
+            mode='outlined'
+            style={[styles.input, { width: width * 0.8 }]}
+            onChangeText={onChangeEmail}
+            autoCorrect={false}
+            value={email}
+            placeholder='Email'
+            placeholderTextColor='lightgrey'
+            autoComplete='email'
+          />
+          <TextInput
+            style={[styles.input, { width: width * 0.8 }]}
+            onChangeText={onChangePassword}
+            autoCorrect={false}
+            onSubmitEditing={signIn}
+            value={password}
+            secureTextEntry={true}
+            placeholder='Password'
+            placeholderTextColor='lightgrey'
+            autoComplete='password'
+          />
+          <Pressable
+            style={({ pressed }) => [
+              { opacity: pressed ? 0.5 : 1.0, width: width * 0.8 },
+              styles.button,
+            ]}
+            onPress={() => {
+              signIn();
+            }}>
+            <Text style={{ color: "white" }}>Sign In</Text>
+          </Pressable>
+        </View>
+        <Text style={{ flex: 1 }}>
+          Don't have an account?{" "}
+          <Text
+            style={{ textDecorationLine: "underline" }}
+            onPress={() => navigation.navigate("SignUp")}>
+            Sign Up here.
+          </Text>
         </Text>
-      </Text>
-      {/* Snackbars - display errors to user */}
-      <Snackbar
-        visible={snackBarVisible}
-        onDismiss={onDismissSnackBar}
-        rippleColor={"#4F83A5"}
-        action={{
-          label: "Dismiss",
-          textColor: "#4F83A5",
-          onPress: () => {
-            // Do something
-          },
-        }}>
-        <Text style={{ color: "white" }}>{snackbarMessage}</Text>
-      </Snackbar>
-      <LoadingOverlay visible={isLoading} />
-      <StatusBar style='auto' />
-    </SafeAreaView>
+        {/* Snackbars - display errors to user */}
+        <Snackbar
+          visible={snackBarVisible}
+          onDismiss={onDismissSnackBar}
+          rippleColor={"#4F83A5"}
+          action={{
+            label: "Dismiss",
+            textColor: "#4F83A5",
+            onPress: () => {
+              // Do something
+            },
+          }}>
+          <Text style={{ color: "white" }}>{snackbarMessage}</Text>
+        </Snackbar>
+        <LoadingOverlay visible={isLoading} />
+        <StatusBar style='auto' />
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 

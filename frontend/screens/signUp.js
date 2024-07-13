@@ -14,6 +14,8 @@ import {
   Image,
   TextInput,
   Pressable,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { Dimensions } from "react-native";
 import { useState, useEffect } from "react";
@@ -120,78 +122,84 @@ export default function Login({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.logoContainer}>
-        <Image
-          source={require("../assets/logo/logoHorizontal.png")}
-          style={{ width: width * 0.75, flex: 1, resizeMode: "contain" }}
-          alt='Social Tasker logo icon'
-        />
-      </View>
-      <View style={styles.ctaContainer}>
-        <Text style={[styles.ctaText, { fontSize: width * 0.1 }]}>
-          Sign Up{" "}
-        </Text>
-        <Text style={[styles.ctaText, { fontSize: width * 0.055 }]}>
-          and motivate your friends to be more productive!{" "}
-        </Text>
-      </View>
-      <View style={styles.formContainer}>
-        <TextInput
-          mode='outlined'
-          style={[styles.input, { width: width * 0.8 }]}
-          onChangeText={onChangeName}
-          value={name}
-          placeholder='Username'
-          placeholderTextColor='lightgrey'
-          autoComplete='username'
-        />
-        <TextInput
-          mode='outlined'
-          style={[styles.input, { width: width * 0.8 }]}
-          onChangeText={onChangeEmail}
-          value={email}
-          placeholder='Email'
-          placeholderTextColor='lightgrey'
-          autoComplete='email'
-        />
-        <TextInput
-          style={[styles.input, { width: width * 0.8 }]}
-          onChangeText={onChangePassword}
-          value={password}
-          secureTextEntry={true}
-          placeholder='Password'
-          placeholderTextColor='lightgrey'
-          autoComplete='password'
-        />
-        <Pressable
-          style={({ pressed }) => [
-            { opacity: pressed ? 0.5 : 1.0, width: width * 0.8 },
-            styles.button,
-          ]}
-          onPress={() => {
-            signUp();
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../assets/logo/logoHorizontal.png")}
+            style={{ width: width * 0.75, flex: 1, resizeMode: "contain" }}
+            alt='Social Tasker logo icon'
+          />
+        </View>
+        <View style={styles.ctaContainer}>
+          <Text style={[styles.ctaText, { fontSize: width * 0.1 }]}>
+            Sign Up{" "}
+          </Text>
+          <Text style={[styles.ctaText, { fontSize: width * 0.055 }]}>
+            and motivate your friends to be more productive!{" "}
+          </Text>
+        </View>
+        <View style={styles.formContainer}>
+          <TextInput
+            mode='outlined'
+            style={[styles.input, { width: width * 0.8 }]}
+            onChangeText={onChangeName}
+            autoCorrect={false}
+            value={name}
+            placeholder='Username'
+            placeholderTextColor='lightgrey'
+            autoComplete='username'
+          />
+          <TextInput
+            mode='outlined'
+            style={[styles.input, { width: width * 0.8 }]}
+            onChangeText={onChangeEmail}
+            autoCorrect={false}
+            value={email}
+            placeholder='Email'
+            placeholderTextColor='lightgrey'
+            autoComplete='email'
+          />
+          <TextInput
+            style={[styles.input, { width: width * 0.8 }]}
+            onChangeText={onChangePassword}
+            autoCorrect={false}
+            onSubmitEditing={signUp}
+            value={password}
+            secureTextEntry={true}
+            placeholder='Password'
+            placeholderTextColor='lightgrey'
+            autoComplete='password'
+          />
+          <Pressable
+            style={({ pressed }) => [
+              { opacity: pressed ? 0.5 : 1.0, width: width * 0.8 },
+              styles.button,
+            ]}
+            onPress={() => {
+              signUp();
+            }}>
+            <Text style={{ color: "white" }}>Sign Up</Text>
+          </Pressable>
+        </View>
+        {/* Snackbars - display errors to user */}
+        <Snackbar
+          visible={snackBarVisible}
+          onDismiss={onDismissSnackBar}
+          rippleColor={"#4F83A5"}
+          action={{
+            label: "Dismiss",
+            textColor: "#4F83A5",
+            onPress: () => {
+              // Do something
+            },
           }}>
-          <Text style={{ color: "white" }}>Sign Up</Text>
-        </Pressable>
-      </View>
-      {/* Snackbars - display errors to user */}
-      <Snackbar
-        visible={snackBarVisible}
-        onDismiss={onDismissSnackBar}
-        rippleColor={"#4F83A5"}
-        action={{
-          label: "Dismiss",
-          textColor: "#4F83A5",
-          onPress: () => {
-            // Do something
-          },
-        }}>
-        <Text style={{ color: "white" }}>{snackbarMessage}</Text>
-      </Snackbar>
-      <LoadingOverlay visible={isLoading} />
-      <StatusBar style='auto' />
-    </SafeAreaView>
+          <Text style={{ color: "white" }}>{snackbarMessage}</Text>
+        </Snackbar>
+        <LoadingOverlay visible={isLoading} />
+        <StatusBar style='auto' />
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 
