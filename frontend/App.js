@@ -224,7 +224,7 @@ function PublicRoutes() {
 // If the user is not logged in, it renders the public routes
 function MainNavigator() {
   const { currentUser, loading } = useAuth();
-  const [isConnected, setIsConnected] = useState(false);
+  const [isConnected, setIsConnected] = useState(true);
 
   useEffect(() => {
     const handleConnectivityChange = (state) => {
@@ -233,7 +233,7 @@ function MainNavigator() {
 
     const unsubscribe = addEventListener(handleConnectivityChange);
 
-    return () => unsubscribe();
+    unsubscribe();
   }, []);
 
   return (

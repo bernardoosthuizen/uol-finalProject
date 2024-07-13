@@ -44,13 +44,11 @@ export default function Login({ navigation }) {
   const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
-    setTimeout(() => {
-      if (!isConnected) {
-        setSnackBarVisible(true);
-        setSnackbarMessage("No internet connection.");
-      }
-    }, 2000);
-  }, []);
+    if (!isConnected) {
+      setSnackBarVisible(true);
+      setSnackbarMessage("No internet connection.");
+    }
+  }, [isConnected]);
 
   useEffect(() => {
     // Trigger form validation when task data changes

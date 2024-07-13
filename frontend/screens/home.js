@@ -50,16 +50,15 @@ export default function Home({ navigation }) {
   const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
   const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
 
+  useEffect(() => {
+    if (!isConnected) {
+      setSnackBarVisible(true);
+      setSnackbarMessage("No internet connection.");
+    }
+  }, [isConnected]);
 
   // get dashboard data
   useEffect(() => {
-    setTimeout(() => {
-      if (!isConnected) {
-        setSnackBarVisible(true);
-        setSnackbarMessage("No internet connection.");
-      }
-    }, 2000);
-    
     setLoading(true);
     fetch(`${apiUrl}/api/dashboard/${currentUser.uid}`, {
       method: "GET",
