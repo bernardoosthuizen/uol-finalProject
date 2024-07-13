@@ -238,7 +238,7 @@ export default function EditTask({route, navigation}) {
           <Text style={{ color: "white" }}>{snackbarMessage}</Text>
         </Snackbar>
         <LoadingOverlay visible={isLoading} />
-        <StatusBar style='auto' />
+        <StatusBar style='dark-content' />
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );

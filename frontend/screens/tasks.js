@@ -84,7 +84,7 @@ export default function Tasks({ navigation }) {
         </View>
       )}
       <LoadingOverlay visible={isLoading} />
-      <StatusBar style='auto' />
+      <StatusBar style='dark-content' />
     </SafeAreaView>
   );
 }

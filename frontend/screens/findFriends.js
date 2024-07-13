@@ -229,7 +229,7 @@ export default function FindFriends({ navigation, route }) {
         }}>
         <Text style={{ color: "white" }}>{snackbarMessage}</Text>
       </Snackbar>
-      <StatusBar style='auto' />
+      <StatusBar style='dark-content' />
     </SafeAreaView>
   );
 }

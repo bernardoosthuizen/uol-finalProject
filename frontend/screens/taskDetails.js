@@ -168,7 +168,9 @@ export default function Task({route, navigation}) {
               size={26}
               color={"grey"}
             />
-            <Text style={{margin: "5%"}}>{displayDate(taskdata.due_date)}</Text>
+            <Text style={{ margin: "5%" }}>
+              {displayDate(taskdata.due_date)}
+            </Text>
           </View>
           <View style={styles.detailsContainer}>
             <Text>{taskdata.details}</Text>
@@ -238,7 +240,7 @@ export default function Task({route, navigation}) {
         <Text style={{ color: "white" }}>{snackbarMessage}</Text>
       </Snackbar>
       <LoadingOverlay visible={loadingOverlayVisible} />
-      <StatusBar style='auto' />
+      <StatusBar style='dark-content' />
     </SafeAreaView>
   );
 }

@@ -68,7 +68,9 @@ export default function Leaderboard({ navigation }) {
       </View>
       <Pressable
         style={{ flex: 1, justifyContent: "center" }}
-        onPress={() => navigation.navigate("Find Friends", { signUpFlow: false })}>
+        onPress={() =>
+          navigation.navigate("Find Friends", { signUpFlow: false })
+        }>
         <Text
           style={{
             fontSize: width * 0.05,
@@ -89,9 +91,10 @@ export default function Leaderboard({ navigation }) {
           onPress: () => {
             // Do something
           },
-        }}/>
+        }}
+      />
       <LoadingOverlay visible={isLoading} />
-      <StatusBar style='auto' />
+      <StatusBar style='dark-content' />
     </SafeAreaView>
   );
 }
