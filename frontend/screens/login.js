@@ -34,10 +34,12 @@ export default function Login({ navigation }) {
   const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!isConnected) {
-      setSnackBarVisible(true);
-      setSnackbarMessage("No internet connection.");
-    }
+    setTimeout(() => {
+      if (!isConnected) {
+        setSnackBarVisible(true);
+        setSnackbarMessage("No internet connection.");
+      }
+    }, 2000);
   }, []);
 
   useEffect(() => {

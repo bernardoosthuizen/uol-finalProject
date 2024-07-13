@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
 
   // Dev or Prod API URL
   const [apiUrl, setApiUrl] = useState(
-    __DEV__ ? "http://localhost:3000" : "https://api.example.com"
+    __DEV__ ? "http://localhost:3000" : process.env.EXPO_PUBLIC_PROD_API_URL
   );
 
   // Subscribe to auth state changes

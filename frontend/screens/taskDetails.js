@@ -97,8 +97,11 @@ export default function Task({route, navigation}) {
           setLoadingOverlayVisible(false);
           setSnackBarVisible(true);
           setSnackbarMessage("Task completed successfully");
-          // Navigate back
-          navigation.navigate("LoggedInRoutes", { screen: "Tasks" });
+          setTimeout(() => {
+            // Navigate back
+            navigation.navigate("LoggedInRoutes", { screen: "Tasks" });
+          }, 1000);
+          
         }
       })
       .catch((error) => {
@@ -270,8 +273,9 @@ const styles = StyleSheet.create({
   },
   button: {
     alignItems: "center",
+    justifyContent: "center",
     backgroundColor: "#4F83A5",
-    height: 45,
+    height: 50,
     padding: 15,
     margin: 12,
     borderRadius: 8,

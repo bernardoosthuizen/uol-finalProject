@@ -1,11 +1,10 @@
 {
   "expo": {
-    "name": "uol-finalProject",
-    "slug": "uol-finalProject",
+    "name": "SocialTasker",
+    "slug": "social-tasker",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",
@@ -23,6 +22,18 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "45ee6063-a1db-4fb3-b17a-7cb73f337a92"
+      }
+    },
+    "owner": "bernardoosthuizen",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/45ee6063-a1db-4fb3-b17a-7cb73f337a92"
     }
   }
 }

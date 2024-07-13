@@ -53,10 +53,13 @@ export default function Home({ navigation }) {
 
   // get dashboard data
   useEffect(() => {
-    if (!isConnected) {
-      setSnackBarVisible(true);
-      setSnackbarMessage("No internet connection.");
-    }
+    setTimeout(() => {
+      if (!isConnected) {
+        setSnackBarVisible(true);
+        setSnackbarMessage("No internet connection.");
+      }
+    }, 2000);
+    
     setLoading(true);
     fetch(`${apiUrl}/api/dashboard/${currentUser.uid}`, {
       method: "GET",
@@ -87,7 +90,7 @@ export default function Home({ navigation }) {
         alt='Social Tasker logo icon'
       />
       <View style={styles.leaderboardContainer}>
-        <Text style={styles.titleText}>Leader-board</Text>
+        <Text style={styles.titleText}>Leaderboard</Text>
         <View>
           <DataTable>
             <LeaderboardListComponent users={dashData.friends} />

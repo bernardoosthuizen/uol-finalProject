@@ -4,6 +4,7 @@
  */
 
 // Import necessary modules
+const { onRequest } = require("firebase-functions/v2/https");  
 const express = require("express");
 const { param, validationResult } = require("express-validator"); 
 const bodyParser = require("body-parser");
@@ -16,9 +17,10 @@ require("dotenv").config();
 
 // For local testing only. Not required in production.
 // -------------------------------------------------------
-const admin = require("firebase-admin");
 const serviceAccount = require("../../uol-fp-firebase-adminsdk-h1olz-34e8ea07cc.json");
 // -------------------------------------------------------
+
+const admin = require("firebase-admin");
 
 // Initialize Firebase Admin
 initializeApp({
@@ -66,7 +68,7 @@ app.get("/api/dashboard/:userId", apiKeyMiddleware, async (req, res) => {
   const { userId } = req.params;
 
   try {
-    // Firestore query for tasks
+    // Get tasks from Firestore DB
     const tasksPromise = db
       .collection(`tasks-${userId}`)
       .orderBy("due_date")
@@ -86,7 +88,7 @@ app.get("/api/dashboard/:userId", apiKeyMiddleware, async (req, res) => {
         return tasks;
       });
 
-    // Neo4j query for friends
+    // Get friends from Neo4j DB
     const friendsPromise = session
       .run(
         `MATCH (u:User {user_id: $userId})
@@ -242,6 +244,7 @@ app.delete("/api/user/:userId", apiKeyMiddleware, (req, res) => {
 app.get(
   "/api/user/:userId",
   apiKeyMiddleware,
+  // Validate user ID param
   param("userId")
     .isString()
     .withMessage("Invalid user ID. Must be a string.")
@@ -274,6 +277,7 @@ app.get(
 // Get friends of a user
 app.get("/api/friends/:userId",
   apiKeyMiddleware,
+  // Validate user ID param
   param("userId")
     .isString()
     .withMessage("Invalid user ID. Must be a string.")
@@ -321,7 +325,7 @@ app.post("/api/send-friend-request", apiKeyMiddleware, (req, res) => {
       if (!requests.includes(userId)) {
         // Check if userId is not already in the list to avoid duplicates
         requests.push(userId); // Add the new userId to the list
-        // Update the reference with the new list
+        // Set the updated list in the database
         ref
           .set(requests)
           .then(() => res.status(201).send({ message: "Friend request sent" }))
@@ -339,6 +343,7 @@ app.post("/api/send-friend-request", apiKeyMiddleware, (req, res) => {
       }
     },
     (error) => {
+      // Handle error
       res
         .status(500)
         .send({
@@ -379,6 +384,7 @@ app.post("/api/add-friend", apiKeyMiddleware, (req, res) => {
       return res.status(201).send({ message: "Friend added"});
     })
     .catch((error) => {
+      // Handle error
       const { code, message } = error;
       return res.status(code).send({ error: message });
     });
@@ -449,6 +455,7 @@ app.delete("/api/reject-friend-request/:userId/:friendId", apiKeyMiddleware, (re
           res.status(204).send({ message: "Friend request rejected" })})
     },
     (error) => {
+      // Handle error
       res
         .status(500)
         .send({
@@ -468,7 +475,7 @@ app.post("/api/new-task", apiKeyMiddleware, taskValidator, (req, res) => {
   if (!errors.isEmpty()) {
     return res.status(422).send({ errors: errors.array() });
   }
-
+  // destructure task data from request body
   const {
     title,
     description,
@@ -511,6 +518,7 @@ app.post("/api/new-task", apiKeyMiddleware, taskValidator, (req, res) => {
 // Get tasks of a user
 app.get( "/api/tasks/user/:userId",
   apiKeyMiddleware,
+  // Validate user ID param
   param("userId")
     .isString()
     .withMessage("Invalid user ID. Must be a string.")
@@ -546,6 +554,7 @@ app.get( "/api/tasks/user/:userId",
 // Get task by ID
 app.get( "/api/task/:taskId/user/:userId",
   apiKeyMiddleware,
+  // Validate user ID and task ID params
   param("userId")
     .isString()
     .withMessage("Invalid user ID. Must be a string.")
@@ -591,6 +600,11 @@ app.put(
     // Check for validation errors
     const errors = validationResult(req);
 
+    // Return validation errors if any
+    if (!errors.isEmpty()) {
+      return res.status(422).send({ errors: errors.array() });
+    }
+
     // Update task in firestore database by task id
     db.collection(`tasks-${userId}`)
       .doc(taskId)
@@ -613,11 +627,11 @@ app.put(
   "/api/user/:userId/complete-task/:taskId",
   apiKeyMiddleware,
   (req, res) => {
+    // Extract user ID and task ID from request parameters
     const { userId, taskId } = req.params;
-
+    // Declare variables to store user and task data
     let userData;
     let taskData;
-    let newScore = 0;
 
     // Get user data from firestore
     db.collection("users")
@@ -673,6 +687,7 @@ app.put(
                 break;
             }
 
+            // Calculate days since last task
             if (userData.last_task_completed_date) {
               const timeSinceLastTask =
                 new Date() - new Date(userData.last_task_completed_date);

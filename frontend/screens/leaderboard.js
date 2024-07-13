@@ -68,7 +68,7 @@ export default function Leaderboard({ navigation }) {
       </View>
       <Pressable
         style={{ flex: 1, justifyContent: "center" }}
-        onPress={() => navigation.navigate("Find Friends")}>
+        onPress={() => navigation.navigate("Find Friends", { signUpFlow: false })}>
         <Text
           style={{
             fontSize: width * 0.05,
