@@ -4,7 +4,7 @@
  */
 
 // Import necessary modules
-const { onRequest } = require("firebase-functions/v2/https");  
+const { onRequest } = require("firebase-functions/v2/https");  // Used when deployed to Firebase
 const express = require("express");
 const { param, validationResult } = require("express-validator"); 
 const bodyParser = require("body-parser");
