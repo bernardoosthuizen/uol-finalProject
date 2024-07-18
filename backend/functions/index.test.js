@@ -205,6 +205,7 @@ describe("PUT /api/task/:taskId/user/:userId", () => {
     status: "complete",
     due_date: new Date().getTime(),
     priority: "low",
+    user_id: userData.user_id,
   };
 
   it("Should not allow unauthorised access", async () => {
