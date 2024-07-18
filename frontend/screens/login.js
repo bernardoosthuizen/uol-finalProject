@@ -123,7 +123,7 @@ export default function Login({ navigation }) {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <KeyboardAvoidingView style={styles.container} behavior='padding'>
-        <SafeAreaView style={{alignItems: 'center'}}>
+        <SafeAreaView style={{ alignItems: "center" }}>
           <View style={styles.logoContainer}>
             <Image
               source={require("../assets/logo/logoIcon.png")}
@@ -197,9 +197,10 @@ export default function Login({ navigation }) {
             }}>
             <Text style={{ color: "white" }}>{snackbarMessage}</Text>
           </Snackbar>
-          <LoadingOverlay visible={isLoading} />
+
           <StatusBar style='dark-content' />
         </SafeAreaView>
+        <LoadingOverlay visible={isLoading} />
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );

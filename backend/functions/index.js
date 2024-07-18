@@ -420,9 +420,13 @@ app.post("/api/search-friends", apiKeyMiddleware, (req, res) => {
 app.get("/api/search-friend/:userName", apiKeyMiddleware, (req, res) => {
   const {userName} = req.params;
 
+  const lowerName = userName.toLowerCase();
+
   // Search for user in Neo4j database
   session
-    .run("MATCH (u:User) WHERE u.name CONTAINS $userName RETURN u", { userName })
+    .run("MATCH (u:User) WHERE LOWER(u.name) CONTAINS LOWER($lowerName) RETURN u", {
+      lowerName,
+    })
     .then((result) => {
       const users = result.records.map((record) => record.get("u").properties);
       if (users.length === 0) {

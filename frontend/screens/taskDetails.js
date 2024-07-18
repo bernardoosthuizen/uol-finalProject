@@ -5,13 +5,14 @@ when they are logged in.
 **/
 
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState, useLayoutEffect } from 'react';
+import { useEffect, useState, useLayoutEffect, useRef } from 'react';
 import { StyleSheet, Text, View, SafeAreaView, Dimensions, Pressable, Alert, Image } from "react-native";
 import { useAuth } from '../contextProviders/authContext';
 import LoadingOverlay from "../components/loadingOverlay";
 import { Snackbar } from "react-native-paper";
 import { HeaderBackButton } from "@react-navigation/elements";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import LottieView from "lottie-react-native";
 
 export default function Task({route, navigation}) {
   const [taskdata, setTaskData] = useState();
@@ -82,6 +83,7 @@ export default function Task({route, navigation}) {
     return d.toDateString();
   };
 
+  const confettiRef = useRef(null);
 
   handleTaskComplete = () => {
     setLoadingOverlayVisible(true);
@@ -95,6 +97,7 @@ export default function Task({route, navigation}) {
       .then((response) => {
         if (response.status === 200) {
           setLoadingOverlayVisible(false);
+          confettiRef.current?.play(0);
           setSnackBarVisible(true);
           setSnackbarMessage("Task completed successfully");
           setTimeout(() => {
@@ -225,6 +228,16 @@ export default function Task({route, navigation}) {
           </View>
         </View>
       )}
+      {/* Lottie animation */}
+      <LottieView
+        ref={confettiRef}
+        source={require("../assets/celebration-animation.json")}
+        autoPlay={false}
+        loop={false}
+        style={styles.lottie}
+        resizeMode='cover'
+      />
+
       {/* Snackbars - display errors to user */}
       <Snackbar
         visible={snackBarVisible}
@@ -261,7 +274,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-
   },
   detailsContainer: {
     flex: 3,
@@ -281,5 +293,14 @@ const styles = StyleSheet.create({
     padding: 15,
     margin: 12,
     borderRadius: 8,
+  },
+  lottie: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1000,
+    pointerEvents: "none",
   },
 });

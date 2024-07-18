@@ -75,6 +75,7 @@ export default function Profile({ friendRequests }) {
 
   // Delete account function
   const handleDeleteAccount = (password) => {
+    setIsLoading(true);
     // UserId from context
     const userId = currentUser.uid;
     // function from auth context

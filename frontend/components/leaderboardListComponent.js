@@ -20,8 +20,9 @@ export default function LeaderboardListComponent({ users }) {
     users?.forEach((user, index) => {
       user.rank = index + 1;
     });
+    console.log(users);
     
-    if (users?.length == 1) {
+    if (users?.length == 1 || users?.length == 0) {
       return (
         <View style={styles.messageContainer}>
           <Text style={{color: "grey"}}>Add friends to see their scores.</Text>

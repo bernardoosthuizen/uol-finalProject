@@ -225,9 +225,9 @@ export default function Login({ navigation }) {
             }}>
             <Text style={{ color: "white" }}>{snackbarMessage}</Text>
           </Snackbar>
-          <LoadingOverlay visible={isLoading} />
           <StatusBar style='dark-content' />
         </SafeAreaView>
+        <LoadingOverlay visible={isLoading} />
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
