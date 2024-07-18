@@ -35,6 +35,7 @@ const driver = neo4j.driver(
   neo4j.auth.basic(process.env.NEO4J_USER, process.env.NEO4J_PASSWORD)
 );
 const session = driver.session();
+const alt_session = driver.session();
 
 // Initialize Firestore database
 const db = admin.firestore();
@@ -423,8 +424,8 @@ app.get("/api/search-friend/:userName", apiKeyMiddleware, (req, res) => {
   const lowerName = userName.toLowerCase();
 
   // Search for user in Neo4j database
-  session
-    .run("MATCH (u:User) WHERE LOWER(u.name) CONTAINS LOWER($lowerName) RETURN u", {
+  alt_session
+    .run("MATCH (u:User) WHERE LOWER(u.name)  CONTAINS $lowerName RETURN u", {
       lowerName,
     })
     .then((result) => {

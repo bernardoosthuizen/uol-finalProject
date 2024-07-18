@@ -20,7 +20,6 @@ export default function LeaderboardListComponent({ users }) {
     users?.forEach((user, index) => {
       user.rank = index + 1;
     });
-    console.log(users);
     
     if (users?.length == 1 || users?.length == 0) {
       return (
@@ -39,7 +38,7 @@ export default function LeaderboardListComponent({ users }) {
               <DataTable.Cell style={{ flex: 1 }}>
                 <Text style={{ fontSize: width * 0.05 }}>{item.rank}</Text>
               </DataTable.Cell>
-              <DataTable.Cell style={{ flex: 2 }}>
+              <DataTable.Cell style={{ flex: 3 }}>
                 {item.user_id == currentUser.uid ? (
                   <Text style={{ fontSize: width * 0.05, fontWeight: "bold" }}>
                     Me
