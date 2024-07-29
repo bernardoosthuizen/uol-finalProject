@@ -602,7 +602,6 @@ app.put(
   taskValidator,
   (req, res) => {
     const { taskId, userId } = req.params;
-    console.log("api: ", req.body);
     // Check for validation errors
     const errors = validationResult(req);
 

@@ -186,9 +186,6 @@ export default function Task({route, navigation}) {
   const { width, height } = Dimensions.get("window");
   return (
     <SafeAreaView style={styles.container}>
-      {isLoading ? (
-        <LoadingOverlay />
-      ) : (
         <View>
           <View style={styles.titleContainer}>
             <Text
@@ -269,7 +266,6 @@ export default function Task({route, navigation}) {
             </Pressable>
           </View>
         </View>
-      )}
       {/* Lottie animation */}
       <LottieView
         ref={confettiRef}

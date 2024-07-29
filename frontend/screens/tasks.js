@@ -61,7 +61,7 @@ export default function Tasks({ navigation }) {
           });
       }
     })
-  }, [isVisible]); // Empty dependency array means this effect runs once on mount
+  }, [isVisible]); 
 
 
   const { width } = Dimensions.get("window");
