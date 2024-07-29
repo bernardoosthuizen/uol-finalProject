@@ -4,6 +4,9 @@ Final Project - Social Tasker
 ## Description
 This project is the culmination of a university course, exploring the feasibility of, designing the interface and development of the Social Tasker concept. Social Tasker is a gamified task management platform that aims to build a strong sense of community around productivity and collaboration. The feasibility analysis outlined in this report examines the platform's design, technical architecture, and development plan to ensure successful and timely delivery.
 
+## Project Report
+This assignment required a written report be created to document the reseach, design and development of the project. It will be available in the repo once done.
+
 ## Installation
 
 NOTE: Running this project won't work without the relevant API keys. Get in touch [here](mailto:bernard.oosthuizen@gmail.com) if you would like to try this on your local machine or have a look at the [links](#other-links) to see how to run the project.
