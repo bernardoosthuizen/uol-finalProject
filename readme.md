@@ -6,7 +6,7 @@ This project is the culmination of a university course, exploring the feasibilit
 
 ## Installation
 
-NOTE: Running this project won't work without the relevant API keys. Get in touch [here](mailto:bernard.oosthuizen@gmail.com) if you would like to try this on your local machine or have a look at the [links](##-other-links) to see how to run the project.
+NOTE: Running this project won't work without the relevant API keys. Get in touch [here](mailto:bernard.oosthuizen@gmail.com) if you would like to try this on your local machine or have a look at the [links](#-other-links) to see how to run the project.
 
 Clone this repo and navigate to the root folder.
 ### Install and run backend
