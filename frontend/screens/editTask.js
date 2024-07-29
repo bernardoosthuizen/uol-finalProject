@@ -22,6 +22,7 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import {useAuth} from '../contextProviders/authContext';
 import LoadingOverlay from "../components/loadingOverlay";
 import { Snackbar } from "react-native-paper";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function EditTask({route, navigation}) {
   const { taskId, taskdata } = route.params;
@@ -118,27 +119,41 @@ export default function EditTask({route, navigation}) {
         return;
       }
     }
+
+    let editedTask = {
+      title: taskTitle,
+      priority: taskPriority,
+      due_date: taskDue,
+      description: taskDescription,
+      details: taskDetails,
+      status: "open",
+      user_id: currentUser.uid,
+    };
     fetch(`${apiUrl}/api/task/${taskId}/user/${currentUser.uid}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
       },
-      body: JSON.stringify({
-        title: taskTitle,
-        priority: taskPriority,
-        due_date: Date.parse(taskDue),
-        description: taskDescription,
-        details: taskDetails,
-        status: "open",
-        user_id: currentUser.uid,
-      }),
+      body: JSON.stringify(editedTask),
     })
       .then((response) => {
         return response.json();
       })
       .then((data) => {
-        navigation.navigate("Tasks");
+        AsyncStorage.getItem("tasks")
+          .then((tasksData) => {
+            console.log("tasksData", data);
+            let taskArray = JSON.parse(tasksData);
+            let index = taskArray.findIndex((task) => task.id === taskId);
+
+            taskArray[index] = editedTask;
+            taskArray[index].id = taskId;
+            AsyncStorage.setItem("tasks", JSON.stringify(taskArray));
+          })
+          .then(() => {
+            navigation.navigate("Tasks");
+          });
       })
       .catch((error) => {
         console.error(error);

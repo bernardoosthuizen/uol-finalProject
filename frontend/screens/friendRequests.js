@@ -22,6 +22,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import LoadingOverlay from "../components/loadingOverlay";
 
 
+
 export default function FriendRequest({ route, navigation }) {
   const { width } = Dimensions.get("window");
   const friendRequests = route.params.friendRequests;

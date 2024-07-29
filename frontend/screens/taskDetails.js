@@ -10,17 +10,20 @@ import { StyleSheet, Text, View, SafeAreaView, Dimensions, Pressable, Alert, Ima
 import { useAuth } from '../contextProviders/authContext';
 import LoadingOverlay from "../components/loadingOverlay";
 import { Snackbar } from "react-native-paper";
+import { useIsFocused } from "@react-navigation/native";
 import { HeaderBackButton } from "@react-navigation/elements";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import LottieView from "lottie-react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Task({route, navigation}) {
   const [taskdata, setTaskData] = useState();
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadingOverlayVisible, setLoadingOverlayVisible] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { currentUser, apiUrl } = useAuth();
   const { taskId, goBack } = route.params;
+
+  const isVisible = useIsFocused();
 
 
   // Snack bar state
@@ -53,28 +56,48 @@ export default function Task({route, navigation}) {
 
   // Get the task data from the server
   useEffect(() => {
-    fetch(`${apiUrl}/api/task/${taskId}/user/${currentUser.uid}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
-      },
-    })
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        setTaskData(data);
+    setIsLoading(true);
+    AsyncStorage.getItem("tasks").then((taskData) => {
+      if(taskData) {
+        let taskArray = JSON.parse(taskData);
+        let localTask = taskArray.find((task) => task.id === taskId);
+        setTaskData(localTask);
         setIsLoading(false);
-        setLoadingOverlayVisible(false);
-      })
-      .catch((error) => {
-        setSnackBarVisible(true);
-        setSnackbarMessage("Failed to get task", error.message);
-        navigation.navigate("ProtectedrRoutes");
-        console.log(error);
-      });
-  }, []);
+      } else {
+        fetch(`${apiUrl}/api/task/${taskId}/user/${currentUser.uid}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
+          },
+        })
+          .then((response) => {
+            return response.json();
+          })
+          .then((data) => {
+            setTaskData(data);
+            setIsLoading(false);
+            // Save task to local storage
+            AsyncStorage.getItem("tasks")
+              .then((taskData) => {
+                let taskArray = JSON.parse(taskData);
+                taskArray.push(data);
+                AsyncStorage.setItem("tasks", JSON.stringify(taskArray));
+              })
+              .catch((error) => {
+                console.error("Failed to save task to local storage", error);
+              });
+          })
+          .catch((error) => {
+            setSnackBarVisible(true);
+            setSnackbarMessage("Failed to get task", error.message);
+            navigation.navigate("ProtectedrRoutes");
+            console.log(error);
+          });
+      }
+    });
+    
+  }, [isVisible]);
 
   const date = new Date();
 
@@ -86,7 +109,7 @@ export default function Task({route, navigation}) {
   const confettiRef = useRef(null);
 
   handleTaskComplete = () => {
-    setLoadingOverlayVisible(true);
+    setIsLoading(true);
     fetch(`${apiUrl}/api/user/${currentUser.uid}/complete-task/${taskId}`, {
       method: "PUT",
       headers: {
@@ -96,15 +119,25 @@ export default function Task({route, navigation}) {
     })
       .then((response) => {
         if (response.status === 200) {
-          setLoadingOverlayVisible(false);
-          confettiRef.current?.play(0);
-          setSnackBarVisible(true);
-          setSnackbarMessage("Task completed successfully");
-          setTimeout(() => {
-            // Navigate back
-            navigation.navigate("LoggedInRoutes", { screen: "Tasks" });
-          }, 1000);
-          
+          AsyncStorage.getItem("tasks")
+            .then((taskData) => {
+              let taskArray = JSON.parse(taskData);
+              let index = taskArray.findIndex((task) => task.id === taskId);
+              // remove the task from the array
+              taskArray.splice(index, 1);
+              AsyncStorage.setItem("tasks", JSON.stringify(taskArray));
+            })
+            .then(() => {
+              setIsLoading(false);
+              confettiRef.current?.play(0);
+              setSnackBarVisible(true);
+              setSnackbarMessage("Task completed successfully");
+
+              setTimeout(() => {
+              // Navigate back
+                navigation.navigate("LoggedInRoutes", { screen: "Tasks" });
+              }, 1000);
+            });
         }
       })
       .catch((error) => {
@@ -116,7 +149,7 @@ export default function Task({route, navigation}) {
   }
 
   const handleDeleteTask = () => {
-    setLoadingOverlayVisible(true);
+    setIsLoading(true);
     fetch(`${apiUrl}/api/user/${currentUser.uid}/task/${taskId}`, {
       method: "DELETE",
       headers: {
@@ -126,11 +159,20 @@ export default function Task({route, navigation}) {
     })
       .then((response) => {
         if (response.status === 204) {
-          setLoadingOverlayVisible(false);
-          setSnackBarVisible(true);
-          setSnackbarMessage("Task deleted successfully");
-          // Navigate back
-          navigation.navigate("LoggedInRoutes");
+          AsyncStorage.getItem("tasks").then((taskData) => {
+            let taskArray = JSON.parse(taskData);
+            let index = taskArray.findIndex((task) => task.id === taskId);
+            // remove the task from the array
+            taskArray.splice(index, 1);
+            AsyncStorage.setItem("tasks", JSON.stringify(taskArray));
+          })
+          .then(() => {
+            setIsLoading(false);
+            setSnackBarVisible(true);
+            setSnackbarMessage("Task deleted successfully");
+            // Navigate back
+            navigation.navigate("LoggedInRoutes");
+          });
         }
       })
       .catch((error) => {
@@ -156,13 +198,13 @@ export default function Task({route, navigation}) {
                 fontWeight: "bold",
                 marginBottom: "5%",
               }}>
-              {taskdata.title}
+              {taskdata?.title}
             </Text>
             <Text
               style={{
                 fontSize: width * 0.04,
               }}>
-              {taskdata.description}
+              {taskdata?.description}
             </Text>
           </View>
           <View style={styles.dateContainer}>
@@ -172,11 +214,11 @@ export default function Task({route, navigation}) {
               color={"grey"}
             />
             <Text style={{ margin: "5%" }}>
-              {displayDate(taskdata.due_date)}
+              {displayDate(taskdata?.due_date)}
             </Text>
           </View>
           <View style={styles.detailsContainer}>
-            <Text>{taskdata.details}</Text>
+            <Text>{taskdata?.details}</Text>
           </View>
           <View style={styles.actionsContainer}>
             <Pressable
@@ -252,7 +294,7 @@ export default function Task({route, navigation}) {
         }}>
         <Text style={{ color: "white" }}>{snackbarMessage}</Text>
       </Snackbar>
-      <LoadingOverlay visible={loadingOverlayVisible} />
+      <LoadingOverlay visible={isLoading} />
       <StatusBar style='dark-content' />
     </SafeAreaView>
   );

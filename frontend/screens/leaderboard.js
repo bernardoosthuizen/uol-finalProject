@@ -3,7 +3,7 @@
 This is the home screen. It is the screen that the user sees
 when they are logged in.
 **/
-
+// Import modules
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View, SafeAreaView, Pressable } from "react-native";
 import { Dimensions } from "react-native";
@@ -12,21 +12,29 @@ import LeaderboardListComponent from '../components/leaderboardListComponent';
 import { useAuth } from "../contextProviders/authContext";
 import { Snackbar } from "react-native-paper";
 import LoadingOverlay from "../components/loadingOverlay";
+import { useConnectivity } from "../contextProviders/connectivityContext";
 
 export default function Leaderboard({ navigation }) {
+  // Screen state
   const [isLoading, setIsLoading] = useState(true);
   const [friends, setFriends] = useState([]);
-
+  const { isConnected } = useConnectivity();
+  const { currentUser, apiUrl } = useAuth();
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
-
   const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
 
-  const { currentUser, apiUrl } = useAuth();
-
   useEffect(() => {
+    // Check internet connection
+    if (!isConnected) {
+      setIsLoading(false);
+      setSnackbarMessage("No internet. Can't find your friends.");
+      setSnackBarVisible(true);
+      return;
+    }
+
     // fetch user data from backend
     fetch(`${apiUrl}/api/friends/${currentUser.uid}`, {
       method: "GET",
@@ -88,11 +96,10 @@ export default function Leaderboard({ navigation }) {
         action={{
           label: "Dismiss",
           textColor: "#4F83A5",
-          onPress: () => {
-            // Do something
-          },
         }}
-      />
+      >
+        <Text style={{ color: "white" }}>{snackbarMessage}</Text>
+      </Snackbar>
       <LoadingOverlay visible={isLoading} />
       <StatusBar style='dark-content' />
     </SafeAreaView>

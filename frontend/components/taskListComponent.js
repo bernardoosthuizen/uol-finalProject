@@ -74,7 +74,7 @@ export default function TaskListComponent({ tasks, header, navigation }) {
   };
 
   function truncateTitle(title, maxLength) {
-    if (title.length > maxLength) {
+    if (title?.length > maxLength) {
       return title.substring(0, maxLength - 3) + "...";
     } else {
       return title;
@@ -83,6 +83,7 @@ export default function TaskListComponent({ tasks, header, navigation }) {
 
   // Remove all completed tasks from the list
   tasks = tasks?.filter((task) => task.status != "completed");
+  
 
   if (tasks?.length == 0) {
     return (

@@ -27,12 +27,11 @@ import LoadingOverlay from '../components/loadingOverlay';
 import { useConnectivity } from "../contextProviders/connectivityContext";
 
 export default function Login({ navigation }) {
+  // State and screen constants
   const { width } = Dimensions.get("window");
-
-  const { isConnected } = useConnectivity();
-
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
+  const { isConnected } = useConnectivity();
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
@@ -45,19 +44,20 @@ export default function Login({ navigation }) {
   const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!isConnected) {
-      setSnackBarVisible(true);
-      setSnackbarMessage("No internet connection.");
-    }
-  }, [isConnected]);
-
-  useEffect(() => {
     // Trigger form validation when task data changes
     validateLoginData();
   }, [email, password]);
 
   const validateLoginData = () => {
     let errors = {};
+    
+
+
+    // Check internet connection
+    if (!isConnected) {
+      errors.connection = "No internet connection."
+      return;
+    }
 
     // Validate email field
     if (!email) {
@@ -75,7 +75,6 @@ export default function Login({ navigation }) {
         errors.email = "Invalid email address.";
       }
     }
-
     // Validate password field
     if (!password) {
       errors.password = "Password is required.";
@@ -90,6 +89,7 @@ export default function Login({ navigation }) {
   const signIn = () => {
     setLoading(true);
     if (!isFormValid) {
+      console.log(errors);
       if (Object.keys(errors).length == 1) {
         const key = Object.keys(errors)[0];
         const errorText = errors[key];

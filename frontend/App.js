@@ -8,11 +8,15 @@ This file contains the main navigation logic for the app
 import "react-native-gesture-handler";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useEffect, useState } from 'react';
+import { Text } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { ref, onValue } from "firebase/database";
+import { Snackbar } from "react-native-paper";
 
-// import screens
+// import screens and custom helpers
 import Login from './screens/login';
 import SignUp from './screens/signUp';
 import Home from './screens/home';
@@ -27,9 +31,10 @@ import FindFriends from './screens/findFriends';
 import { AuthProvider } from './contextProviders/authContext';
 import { useAuth } from './contextProviders/authContext';
 import { realtimeDb } from './services/firebaseConfig';
-import { ref, onValue } from 'firebase/database';
-import { addEventListener } from "@react-native-community/netinfo";
-import { ConnectivityContext } from "./contextProviders/connectivityContext";
+import {
+  useConnectivity,
+  ConnectivityProvider,
+} from "./contextProviders/connectivityContext";
 
 // Main navigator component
 const Stack = createStackNavigator();
@@ -224,20 +229,19 @@ function PublicRoutes() {
 // If the user is not logged in, it renders the public routes
 function MainNavigator() {
   const { currentUser, loading } = useAuth();
-  const [isConnected, setIsConnected] = useState(true);
+
+  const { isConnected } = useConnectivity();
+  const [snackBarVisible, setSnackBarVisible] = useState(!isConnected);
 
   useEffect(() => {
-    const handleConnectivityChange = (state) => {
-      setIsConnected(state.isConnected);
-    };
+    // Check internet connection
+    setSnackBarVisible(!isConnected);
+  }, [isConnected]);
 
-    const unsubscribe = addEventListener(handleConnectivityChange);
-
-    unsubscribe();
-  }, []);
+  const onDismissSnackBar = () => setSnackBarVisible(false);
 
   return (
-    <ConnectivityContext.Provider value={{ isConnected }}>
+    <>
       <NavigationContainer>
         <Stack.Navigator>
           {currentUser ? (
@@ -255,16 +259,31 @@ function MainNavigator() {
           )}
         </Stack.Navigator>
       </NavigationContainer>
-    </ConnectivityContext.Provider>
+      <Snackbar
+        visible={snackBarVisible}
+        onDismiss={onDismissSnackBar}
+        action={{
+          label: "Dismiss",
+          onPress: () => {
+            // Do something if needed
+          },
+        }}>
+        <Text style={{ color: "white" }}>No internet connection</Text>
+      </Snackbar>
+    </>
   );
 }
 
 
 export default function App() {
   return (
-    <AuthProvider>
-      <MainNavigator />
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <ConnectivityProvider>
+          <MainNavigator />
+        </ConnectivityProvider>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
 

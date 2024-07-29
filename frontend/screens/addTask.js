@@ -3,7 +3,7 @@
 This is the home screen. It is the screen that the user sees
 when they are logged in.
 **/
-
+// Import modules
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
@@ -21,42 +21,41 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { useAuth } from '../contextProviders/authContext';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Snackbar } from "react-native-paper";
+// Import custom components and helpers
 import LoadingOverlay from "../components/loadingOverlay";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function AddTask({navigation}) {
+  // Screen state and constants
   const { currentUser, apiUrl } = useAuth();
-  const [taskTitle, setTaskTitle] = useState(null);
-  const [taskPriority, setTaskPriority] = useState(null);
-  const [taskDue, setTaskDue] = useState(new Date());
+  const [isLoading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  // Task input states
   const displayDate = (date) => {
     const d = new Date(date);
     return d.toDateString();
   };
 
+  const [taskTitle, setTaskTitle] = useState(null);
+  const [taskPriority, setTaskPriority] = useState(null);
+  const [taskDue, setTaskDue] = useState(new Date());
   const newDate = displayDate(taskDue);
   const [taskID, setTaskID] = useState(null);
   const [taskDescription, setTaskDescription] = useState(null);
   const [taskDetails, setTaskDetails] = useState(null);
-
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-
-  const [priorityListOpen, setPriorityListOpen] = useState(false);
+  const [priorityListOpen, setPriorityListOpen] = useState(false); // List select
   const [priorities, setPriorities] = useState([
     { label: "High", value: "high" },
     { label: "Medium", value: "medium" },
     { label: "Low", value: "low" },
-  ]);
-  
-  const [isLoading, setLoading] = useState(false);
-
-  const [errors, setErrors] = useState({});
-  const [isFormValid, setIsFormValid] = useState(false); 
-  
+  ]); // Define available priorities
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
-
   const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
 
   const handleDateConfirm = (date) => {
@@ -64,6 +63,7 @@ export default function AddTask({navigation}) {
     setDatePickerVisibility(false);
   };
 
+  // Validate form
   const validateTaskData = () => {
     let errors = {};
 
@@ -91,20 +91,18 @@ export default function AddTask({navigation}) {
     // Set the errors and update form validity
     setErrors(errors);
     setIsFormValid(Object.keys(errors).length === 0);
-  }; 
+  };
 
   useEffect(() => {
     // Trigger form validation when task data changes
     validateTaskData();
-  }, [taskTitle, taskDescription, taskDetails, taskPriority, taskDue]); 
-
+  }, [taskTitle, taskDescription, taskDetails, taskPriority, taskDue]);
 
   const handleTaskSave = () => {
     setLoading(true);
+    // Check form validation errors
     if (!isFormValid) {
-      console.log(taskDescription)
-      console.log(errors);
-      if (Object.keys(errors).length == 1){
+      if (Object.keys(errors).length == 1) {
         const key = Object.keys(errors)[0];
         const errorText = errors[key];
         setLoading(false);
@@ -117,24 +115,26 @@ export default function AddTask({navigation}) {
         setSnackbarMessage("Please fill out all required fields");
         return;
       }
-      
     }
 
+    const newTaskData = {
+      title: taskTitle,
+      priority: taskPriority,
+      due_date: Date.parse(taskDue),
+      description: taskDescription,
+      details: taskDetails,
+      status: "open",
+      user_id: currentUser.uid,
+    };
+
+    // Save to databse
     fetch(`${apiUrl}/api/new-task`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
       },
-      body: JSON.stringify({
-        title: taskTitle,
-        priority: taskPriority,
-        due_date: Date.parse(taskDue),
-        description: taskDescription,
-        details: taskDetails,
-        status: "open",
-        user_id: currentUser.uid,
-      }),
+      body: JSON.stringify(newTaskData),
     })
       .then((response) => response.json())
       .then((data) => {
@@ -142,19 +142,29 @@ export default function AddTask({navigation}) {
         if (data.errors) {
           // throw error
           throw new Error(data.errors);
-        } 
-        // Navigate to task page
-        navigation.navigate("Task", { taskId: data.docId, goBack: false });
+        }
+        // Save task to local storage
+        AsyncStorage.getItem("tasks")
+          .then((taskData) => {
+            newTaskData.id = data.docId;
+            let taskArray = JSON.parse(taskData);
+            taskArray.push(newTaskData);
+            AsyncStorage.setItem("tasks", JSON.stringify(taskArray));
+          })
+          .then(() => {
+            // Navigate to task page
+            navigation.navigate("Task", { taskId: data.docId, goBack: false });
+          });
       })
       .catch((error) => {
-        console.error("Error:", error); 
+        console.error("Error:", error);
         setSnackBarVisible(true);
         setSnackbarMessage("Failed to create task", error);
       });
   };
 
   const { width, height } = Dimensions.get("window");
-  
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView style={styles.container}>

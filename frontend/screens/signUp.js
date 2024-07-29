@@ -25,22 +25,23 @@ import { createUserWithEmailAndPassword} from 'firebase/auth';
 import { Snackbar } from "react-native-paper";
 import LoadingOverlay from "../components/loadingOverlay";
 import { useAuth } from '../contextProviders/authContext';
+import { useConnectivity } from "../contextProviders/connectivityContext";
 
 
 export default function Login({ navigation }) {
+  // Screen state and constants
   const { width } = Dimensions.get("window");
+  const { isConnected } = useConnectivity();
+  const [isLoading, setLoading] = useState(false);
+  const { apiUrl } = useAuth();
 
   // State for name, email and password
   const [name, onChangeName] = useState("");
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
-
+  // Validation state
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
-
-  const [isLoading, setLoading] = useState(false);
-
-  const { apiUrl } = useAuth();
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
@@ -54,6 +55,12 @@ export default function Login({ navigation }) {
 
   const validateSignupData = () => {
     let errors = {};
+
+    // Check internet connection
+    if (!isConnected) {
+      errors.connection = "No internet connection.";
+      return;
+    }
 
     // Validate email field
     if (!email) {
@@ -71,8 +78,6 @@ export default function Login({ navigation }) {
         errors.email = "Invalid email address.";
       }
     }
-
-
 
     // Validate password field
     if (!password) {

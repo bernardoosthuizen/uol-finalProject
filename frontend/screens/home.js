@@ -17,17 +17,16 @@ import { Dimensions } from "react-native";
 import { DataTable } from "react-native-paper";
 import { Snackbar } from "react-native-paper";
 import { useEffect, useState } from "react";
-// import custom components
+import { useIsFocused } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+// import custom components and helpers
 import TaskListComponent from '../components/taskListComponent';
 import LeaderboardListComponent from '../components/leaderboardListComponent';
 import LoadingOverlay from "../components/loadingOverlay";
 import { useConnectivity } from '../contextProviders/connectivityContext';
-
 import { useAuth } from '../contextProviders/authContext';
 
-
-
-
+// Component to display leaderboard.
 export function LeaderItem ({ item }) {
     return (
         <View>
@@ -39,26 +38,30 @@ export function LeaderItem ({ item }) {
 }
 
 export default function Home({ navigation }) {
+  // Screen state and constants
   const { width } = Dimensions.get("window");
-  const { currentUser, apiUrl } = useAuth();
-  const [dashData, setDashData] = useState({});
+  const { currentUser, apiUrl } = useAuth(); // Auth data
+  const [dashData, setDashData] = useState({}); // Firends and task data to display
   const [isLoading, setLoading] = useState(false);
-  const { isConnected } = useConnectivity();
+  const isVisible = useIsFocused(); // To reload every time the screen is in view
+  const { isConnected } = useConnectivity(); // Connectivity status
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("Placeholder message");
   const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
 
-  useEffect(() => {
-    if (!isConnected) {
-      setSnackBarVisible(true);
-      setSnackbarMessage("No internet connection.");
-    }
-  }, [isConnected]);
-
   // get dashboard data
   useEffect(() => {
+    // Check internet connection
+    if (!isConnected) {
+      setLoading(false);
+      setSnackbarMessage("No internet. Can't get your dashboard.");
+      setSnackBarVisible(true);
+      return;
+    }
+
+    // Get Dashboard
     setLoading(true);
     fetch(`${apiUrl}/api/dashboard/${currentUser.uid}`, {
       method: "GET",
@@ -73,13 +76,16 @@ export default function Home({ navigation }) {
       .then((data) => {
         setDashData(data);
         setLoading(false);
+        // Sync with local storage
+        AsyncStorage.setItem("tasks", JSON.stringify(data.tasks));
       })
       .catch((error) => {
         setSnackBarVisible(true);
         setSnackbarMessage("Failed to get dashboard.", error.message);
         console.error("Failed to get dashboard data", error.message);
+        return;
       });
-  }, []);
+  }, [isVisible]);
 
   return (
     <SafeAreaView style={styles.container}>

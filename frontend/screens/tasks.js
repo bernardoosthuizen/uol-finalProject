@@ -4,7 +4,7 @@ This is the tasks screen. It is the screen that displays all the user's tasks.
 **/
 
 import { StatusBar } from "expo-status-bar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -16,6 +16,7 @@ import { useIsFocused } from "@react-navigation/native";
 import TaskListComponent from '../components/taskListComponent';
 import { useAuth } from '../contextProviders/authContext';
 import LoadingOverlay from '../components/loadingOverlay';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 export default function Tasks({ navigation }) {
@@ -28,32 +29,38 @@ export default function Tasks({ navigation }) {
   const isVisible = useIsFocused();
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      setIsLoading(true);
-      fetch(`${apiUrl}/api/tasks/user/${currentUser.uid}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
-        },
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Failed to fetch tasks");
-          }
-          return response.json();
+    AsyncStorage.getItem("tasks")
+    .then((taskData) => {
+      // If there is task data in local storage, use that
+      if (taskData) {
+        setTasks(JSON.parse(taskData));
+      } else {
+        setIsLoading(true);
+        // Otherwise, fetch the tasks from the API
+        fetch(`${apiUrl}/api/tasks/user/${currentUser.uid}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-Key": process.env.EXPO_PUBLIC_CREATE_API_KEY,
+          },
         })
-        .then((data) => {
-          setTasks(data);
-          setIsLoading(false);
-        })
-        .catch((error) => {
-          setError(error);
-          setIsLoading(false);
-        });
-    };
-
-    fetchTasks();
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Failed to fetch tasks");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            setTasks(data);
+            setIsLoading(false);
+            AsyncStorage.setItem("tasks", JSON.stringify(data));
+          })
+          .catch((error) => {
+            setError(error);
+            setIsLoading(false);
+          });
+      }
+    })
   }, [isVisible]); // Empty dependency array means this effect runs once on mount
 
 

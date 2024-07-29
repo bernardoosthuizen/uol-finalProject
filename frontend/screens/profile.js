@@ -19,18 +19,18 @@ import { useAuth } from '../contextProviders/authContext';
 import { Snackbar } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import LoadingOverlay from "../components/loadingOverlay";
+import { useConnectivity } from "../contextProviders/connectivityContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 export default function Profile({ friendRequests }) {
+  // Screen state
   const { width } = Dimensions.get("window");
-  // Auth context
   const { logout, deleteAccount, resetPassword, currentUser, apiUrl } = useAuth();
-  // User data state
   const [userData, setUserData] = useState();
   const [isLoading, setIsLoading] = useState(true);
-
   const navigation = useNavigation();
-  
+  const { isConnected } = useConnectivity();
 
   // Snack bar state
   const [snackBarVisible, setSnackBarVisible] = useState(false);
@@ -38,6 +38,13 @@ export default function Profile({ friendRequests }) {
   const onDismissSnackBar = () => setSnackBarVisible(!snackBarVisible);
 
   useEffect(() => {
+    // Check connection
+    if (!isConnected) {
+      setIsLoading(false)
+      setSnackbarMessage("No internet. Can't get your profile.");
+      setSnackBarVisible(true);
+      return;
+    }
     // fetch user data from backend
     fetch(`${apiUrl}/api/user/${currentUser.uid}`, {
       method: "GET",
@@ -81,6 +88,7 @@ export default function Profile({ friendRequests }) {
     // function from auth context
     deleteAccount(password)
     .then(()=>{
+      AsyncStorage.removeItem('tasks');
       console.log("Account deleted successfully", userId);
     })
     .catch((error) => {

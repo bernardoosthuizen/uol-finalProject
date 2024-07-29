@@ -22,6 +22,7 @@ import { useState, useEffect, useLayoutEffect } from "react";
 import { Snackbar } from "react-native-paper";
 import { useAuth } from '../contextProviders/authContext';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useConnectivity } from "../contextProviders/connectivityContext";
 
 
 export default function FindFriends({ navigation, route }) {
@@ -29,6 +30,7 @@ export default function FindFriends({ navigation, route }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [friends, setFriends] = useState([]);
+  const { isConnected } = useConnectivity();
 
   const { currentUser, apiUrl } = useAuth();
 
@@ -51,9 +53,16 @@ export default function FindFriends({ navigation, route }) {
   }, [navigation]);
 
   useEffect(() => {
+    // Check internet connection
+    if (!isConnected) {
+      setIsLoading(false);
+      setSnackbarMessage("No internet. Can't search for friends.");
+      setSnackBarVisible(true);
+      return;
+    }
+
     const abortController = new AbortController(); // Create an instance of AbortController
     const signal = abortController.signal; // Get the signal to pass to fetch
-
 
     if (searchQuery == "") {
       return;
@@ -83,7 +92,7 @@ export default function FindFriends({ navigation, route }) {
         setIsLoading(false);
       })
       .catch((error) => {
-        if (error.name !== 'AbortError') {
+        if (error.name !== "AbortError") {
           setSnackBarVisible(true);
           setSnackbarMessage("An error occurred.", error.message);
           navigation.navigate("LoggedInRoutes", { screen: "Home" });
@@ -91,10 +100,9 @@ export default function FindFriends({ navigation, route }) {
         } else {
           return;
         }
-
       });
 
-      return () => abortController.abort();
+    return () => abortController.abort();
   }, [searchQuery]);
 
   handleSendRequest = (friendId) => {
