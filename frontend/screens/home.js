@@ -76,8 +76,10 @@ export default function Home({ navigation }) {
       .then((data) => {
         setDashData(data);
         setLoading(false);
-        // Sync with local storage
-        AsyncStorage.setItem("tasks", JSON.stringify(data.tasks));
+        if(data.tasks.length != 0) {
+          // Sync with local storage
+          AsyncStorage.setItem("tasks", JSON.stringify(data.tasks));
+        }
       })
       .catch((error) => {
         setSnackBarVisible(true);

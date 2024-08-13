@@ -171,7 +171,7 @@ export default function Task({route, navigation}) {
             setSnackBarVisible(true);
             setSnackbarMessage("Task deleted successfully");
             // Navigate back
-            navigation.navigate("LoggedInRoutes");
+            navigation.navigate("LoggedInRoutes", { screen: "Tasks" });
           });
         }
       })

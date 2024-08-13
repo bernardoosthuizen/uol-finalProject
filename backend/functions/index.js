@@ -17,14 +17,14 @@ require("dotenv").config();
 
 // For local testing only. Not required in production.
 // -------------------------------------------------------
-const serviceAccount = require("../../uol-fp-firebase-adminsdk-h1olz-34e8ea07cc.json");
+// const serviceAccount = require("../../uol-fp-firebase-adminsdk-h1olz-34e8ea07cc.json");
 // -------------------------------------------------------
 
 const admin = require("firebase-admin");
 
 // Initialize Firebase Admin
 initializeApp({
-  credential: admin.credential.cert(serviceAccount), // Remove argument for production
+  // credential: admin.credential.cert(serviceAccount),rs // Remove argument for production
   projectId: "uol-fp",
   databaseURL: "https://uol-fp-default-rtdb.europe-west1.firebasedatabase.app/",
 });
@@ -34,8 +34,7 @@ const driver = neo4j.driver(
   process.env.NEO4J_URI,
   neo4j.auth.basic(process.env.NEO4J_USER, process.env.NEO4J_PASSWORD)
 );
-const session = driver.session();
-const alt_session = driver.session();
+// const session = driver.session();
 
 // Initialize Firestore database
 const db = admin.firestore();
@@ -67,6 +66,7 @@ app.use(limiter);
 // Get dashboard data
 app.get("/api/dashboard/:userId", apiKeyMiddleware, async (req, res) => {
   const { userId } = req.params;
+  const session = driver.session();
 
   try {
     // Get tasks from Firestore DB
@@ -112,8 +112,12 @@ app.get("/api/dashboard/:userId", apiKeyMiddleware, async (req, res) => {
     // Construct response with both tasks and friends data
     res.status(200).json({ tasks, friends });
   } catch (error) {
-    const { code, message } = error;
-    return res.status(code).json({ error: message });
+    const { message } = error;
+    console.log("Error getting dashboard data", error);
+    return res.status(500).json({ error: message });
+  } finally {
+    // Close the session
+    session.close();
   }
 });
 
@@ -121,6 +125,7 @@ app.get("/api/dashboard/:userId", apiKeyMiddleware, async (req, res) => {
 app.post("/api/create-user",apiKeyMiddleware, userValidator, (req, res) => {
   // Check for validation errors
   const errors = validationResult(req);
+  const session = driver.session();
 
   // Return validation errors if any
   if (!errors.isEmpty()) {
@@ -135,63 +140,73 @@ app.post("/api/create-user",apiKeyMiddleware, userValidator, (req, res) => {
   db.collection("users")
     .doc(user_id)
     .set(userData)
-    .then(() => {
-      // Add user to Neo4j database
-      session
-        .run("CREATE (u:User {user_id: $user_id, name: $name, score: $score}) RETURN u", {
-          user_id: user_id,
-          name: name,
-          score: 0,
-        })
-        .then(() => {
-          // Create task collection for user in firestore
-          const collectionName = `tasks-${user_id}`;
-          db.collection(collectionName)
-            .doc()
-            .set({ title: "Sample task" })
-            .then(() => {
-              // create firebase realtime database entry
-              const ref = realtimeDb.ref(
-                user_id
-              );
-              ref
-                .set(["placeholder"]
-                )
-                .then(() => {
-                  return res.status(201).send({ user_id: user_id });
-                })
-            });
-        });
+    .then(async () => {
+      // Add user to Neo4j database using a transaction
+      const tx = session.beginTransaction();
+      try {
+        await tx.run(
+          "CREATE (u:User {user_id: $user_id, name: $name, score: $score}) RETURN u",
+          {
+            user_id: user_id,
+            name: name,
+            score: 0,
+          }
+        );
+
+        // Commit the transaction
+        await tx.commit();
+
+        // Create task collection for user in Firestore
+        const collectionName = `tasks-${user_id}`;
+        await db.collection(collectionName).doc().set({ title: "Sample task" });
+
+        // Create Firebase Realtime Database entry
+        const ref = realtimeDb.ref(user_id);
+        await ref.set(["placeholder"]);
+
+        // Close the session
+        session.close();
+
+        // Send a success response
+        res.status(200).send({ message: "User created successfully" });
+      } catch (error) {
+        // Rollback the transaction in case of error
+        await tx.rollback();
+        session.close();
+        console.error("Error:", error);
+        res.status(500).send({ error: "Internal Server Error" });
+      }
     })
     .catch((error) => {
-      const { code, message } = error;
+      const { message } = error;
       // Delete any info that was created in Neo4j and Firestore if an error occurs
       console.log("Error adding user. Deleting user.");
+      console.log(error );
 
       
-      try {
-        // Delete user from firebase auth if created
-        admin.auth().deleteUser(user_id);
-      } catch (error) {
-        console.log("Error deleting user from firebase auth", error);
-      }
+      // try {
+      //   // Delete user from firebase auth if created
+      //   admin.auth().deleteUser(user_id);
+      // } catch (error) {
+      //   console.log("Error deleting user from firebase auth", error);
+      // }
 
-      try {
-        // Delete user in firestore if created
-        db.collection("users").doc(user_id).delete();
-      } catch (error) {
-        console.log("Error deleting user from firestore", error);
-      }
+      // try {
+      //   // Delete user in firestore if created
+      //   db.collection("users").doc(user_id).delete();
+      // } catch (error) {
+      //   console.log("Error deleting user from firestore", error);
+      // }
 
-      try {
-        // Delete user in Neo4j if created
-        session.run("MATCH (u:User {user_id: $user_id}) DELETE u", { user_id });
-      } catch (error) {
-        console.log("Error deleting user from Neo4j", error);
-      }
+      // try {
+      //   // Delete user in Neo4j if created
+      //   session.run("MATCH (u:User {user_id: $user_id}) DELETE u", { user_id });
+      // } catch (error) {
+      //   console.log("Error deleting user from Neo4j", error);
+      // }
 
       // Handle error
-      return res.status(code).send({ error: message });
+      return res.status(500).send({ error: message });
     });
     
 });
@@ -201,6 +216,7 @@ app.post("/api/create-user",apiKeyMiddleware, userValidator, (req, res) => {
 app.delete("/api/user/:userId", apiKeyMiddleware, (req, res) => {
 
   const { userId } = req.params;
+  const session = driver.session();
 
   // Delete user from Neo4j database
   session
@@ -286,6 +302,7 @@ app.get("/api/friends/:userId",
     .isEmpty()
     .withMessage("User ID cannot be empty."), (req, res) => {
   const { userId } = req.params;
+  const session = driver.session();
 
   // Get friends from Neo4j database
   session
@@ -359,6 +376,7 @@ app.post("/api/send-friend-request", apiKeyMiddleware, (req, res) => {
 // Add a friend
 app.post("/api/add-friend", apiKeyMiddleware, (req, res) => {
   const {userId, friendId} = req.body;
+  const session = driver.session();
   // Modify Neo4j database
   // Add friend relationship between users
   session
@@ -394,7 +412,9 @@ app.post("/api/add-friend", apiKeyMiddleware, (req, res) => {
 
 // Search for many users
 app.post("/api/search-friends", apiKeyMiddleware, (req, res) => {
+  console.log("search-friend", req.body);
   const {userIds} = req.body;
+  const session = driver.session();
 
   // Search for users in Neo4j database
   session
@@ -420,11 +440,12 @@ app.post("/api/search-friends", apiKeyMiddleware, (req, res) => {
 // Search for a user
 app.get("/api/search-friend/:userName", apiKeyMiddleware, (req, res) => {
   const {userName} = req.params;
+  const session = driver.session();
 
   const lowerName = userName.toLowerCase();
 
   // Search for user in Neo4j database
-  alt_session
+  session
     .run("MATCH (u:User) WHERE LOWER(u.name)  CONTAINS $lowerName RETURN u", {
       lowerName,
     })
@@ -749,6 +770,7 @@ app.put(
               })
               .then(() => {
                 // Update task status to completed in firestore database by task id
+                const session = driver.session();
                 db.collection(`tasks-${userId}`)
                   .doc(taskId)
                   .update({ status: "completed" })
@@ -802,7 +824,7 @@ app.delete(
 );
 // -------------------------------------------------------
 
-// exports.app = onRequest(app);
+exports.app = onRequest(app);
 
 
 
@@ -810,9 +832,9 @@ app.delete(
 // for local testing only
 // -----------------------------------------
 
-const port = 3000;
-const server = app.listen(port, () => {
-  console.log(`Social Tasker Backend listening on port ${port}`);
-});
+// const port = 3000;
+// const server = app.listen(port, () => {
+//   console.log(`Social Tasker Backend listening on port ${port}`);
+// });
 
-module.exports = { app, server };
+// module.exports = { app, server };
