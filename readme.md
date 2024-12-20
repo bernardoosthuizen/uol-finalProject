@@ -41,10 +41,3 @@ Make sure you have a simulator installed and running. Then for iOS run:
 ```
 npm run ios
 ```
-
-## Other Links
-
-An Expo preview of the project can be found [here](https://expo.dev/preview/update?message=minor%20loading%20states%20updated&updateRuntimeVersion=1.0.0&createdAt=2024-07-29T09%3A30%3A16.573Z&slug=exp&projectId=45ee6063-a1db-4fb3-b17a-7cb73f337a92&group=01589c5b-01dd-4383-9933-5ba9c48fe8ee)
-or by scanning the QR code below: 
-
-![Screenshot 2024-07-29 at 9 37 08 PM](https://github.com/user-attachments/assets/5dbceaad-3f3c-42e5-9499-e1841630e1f1)
